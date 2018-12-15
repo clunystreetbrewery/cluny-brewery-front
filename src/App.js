@@ -2,12 +2,12 @@ import React, { Component } from 'react';
 import styled from 'styled-components';
 import GlobalStyle from './GlobalStyle';
 import { ResponsiveLine } from '@nivo/line';
-import TEMP from './data.js';
 import Card from '@material-ui/core/Card';
 import Fab from '@material-ui/core/Fab';
 import CachedIcon from '@material-ui/icons/Cached';
 import AppBar from '@material-ui/core/AppBar';
-// import axios from 'axios';
+import axios from 'axios';
+import CircularProgress from '@material-ui/core/CircularProgress';
 
 const Page = styled.div`
   background-color: whitesmoke;
@@ -20,7 +20,6 @@ const Container = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  /* justify-content: center; */
 `;
 
 const Title = styled.div`
@@ -30,6 +29,9 @@ const Title = styled.div`
 `;
 
 const GraphContainer = styled(Card)`
+  display: flex;
+  align-items: center;
+  justify-content: center;
   margin: 2em;
   width: 90vw;
   height: 75vh;
@@ -44,6 +46,7 @@ const ReloadButtonContainer = styled.div`
 
 class App extends Component {
   state = {
+    loading: true,
     temperatures: {},
     xMax: 0,
     xMin: 100,
@@ -79,8 +82,11 @@ class App extends Component {
       color: 'yellow',
       data: [],
     };
+    let prevTime = new Date().toLocaleString();
     data.forEach(d => {
       const time = new Date(d.date).toLocaleString();
+      if (prevTime === time) return false;
+      prevTime = time;
       if (d.temperature_average < xMin) xMin = d.temperature_average;
       if (d.temperature_average > xMax) xMax = d.temperature_average;
       temperature_average.data.push({ x: time, y: d.temperature_average.toFixed(2) });
@@ -93,16 +99,18 @@ class App extends Component {
   };
 
   loadData = () => {
-    // const url =
-    //   'https://cors-anywhere.herokuapp.com/http://benoitprost.synology.me:5031/temperatures';
-    // axios.get(url).then(res => {
-    //   const temperatures = this.handleData(res.data);
-    //   this.setState({ temperatures });
-    // });
+    const url =
+      'https://cors-anywhere.herokuapp.com/http://benoitprost.synology.me:5031/temperatures';
+    axios.get(url).then(res => {
+      const { temperatures, xMax, xMin } = this.handleData(res.data);
+      this.setState({ temperatures, xMin, xMax, loading: false });
+    });
+  };
 
-    const { temperatures, xMax, xMin } = this.handleData(TEMP);
-    console.log({ temperatures, xMax, xMin });
-    this.setState({ temperatures, xMin, xMax });
+  buttonClick = () => {
+    this.setState({ loading: true, temperatures: [] }, () => {
+      this.loadData();
+    });
   };
 
   renderAxisBottom = data => {
@@ -157,9 +165,10 @@ class App extends Component {
                 data={this.state.temperatures}
               />
             )}
+            {this.state.loading && <CircularProgress size={100} />}
           </GraphContainer>
           <ReloadButtonContainer>
-            <Fab color="secondary" aria-label="Reload" onClick={this.loadData}>
+            <Fab color="secondary" aria-label="Reload" onClick={this.buttonClick}>
               <CachedIcon />
             </Fab>
           </ReloadButtonContainer>
