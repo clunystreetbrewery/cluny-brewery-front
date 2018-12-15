@@ -45,51 +45,74 @@ const ReloadButtonContainer = styled.div`
 class App extends Component {
   state = {
     temperatures: {},
+    xMax: 0,
+    xMin: 100,
   };
 
-  componentDidMount = () => {
-    // const url =
-    //   'https://cors-anywhere.herokuapp.com/http://benoitprost.synology.me:5031/temperatures';
-    // axios.get(url).then(res => {
-    //   const temperatures = res.data;
-    //   this.setState({ temperatures });
-    // });
-
-    const temperatures = this.handleData(TEMP);
-    this.setState({ temperatures });
-  };
+  componentDidMount = () => this.loadData();
 
   handleData = data => {
-    const newData = [];
+    let xMin = this.state.xMin;
+    let xMax = this.state.xMax;
+    const temperatures = [];
     const temperature_average = {
       id: 'temperature_average',
+      label: 'Average',
       color: 'red',
       data: [],
     };
     const temperature_blue = {
       id: 'temperature_blue',
-      color: 'blue',
+      label: 'Blue',
+      color: 'hsl(191, 70%, 50%)',
       data: [],
     };
     const temperature_green = {
       id: 'temperature_green',
+      label: 'Green',
       color: 'green',
       data: [],
     };
     const temperature_yellow = {
       id: 'temperature_yellow',
+      label: 'Yellow',
       color: 'yellow',
       data: [],
     };
     data.forEach(d => {
-      const time = new Date(d.date).getTime();
-      temperature_average.data.push({ x: time, y: d.temperature_average });
-      temperature_blue.data.push({ x: time, y: d.temperature_blue });
-      temperature_green.data.push({ x: time, y: d.temperature_green });
-      temperature_yellow.data.push({ x: time, y: d.temperature_yellow });
+      const time = new Date(d.date).toLocaleString();
+      if (d.temperature_average < xMin) xMin = d.temperature_average;
+      if (d.temperature_average > xMax) xMax = d.temperature_average;
+      temperature_average.data.push({ x: time, y: d.temperature_average.toFixed(2) });
+      temperature_blue.data.push({ x: time, y: d.temperature_blue.toFixed(2) });
+      temperature_green.data.push({ x: time, y: d.temperature_green.toFixed(2) });
+      temperature_yellow.data.push({ x: time, y: d.temperature_yellow.toFixed(2) });
     });
-    newData.push(temperature_average, temperature_blue, temperature_green, temperature_yellow);
-    return newData;
+    temperatures.push(temperature_blue, temperature_green, temperature_yellow, temperature_average);
+    return { temperatures, xMax, xMin };
+  };
+
+  loadData = () => {
+    // const url =
+    //   'https://cors-anywhere.herokuapp.com/http://benoitprost.synology.me:5031/temperatures';
+    // axios.get(url).then(res => {
+    //   const temperatures = this.handleData(res.data);
+    //   this.setState({ temperatures });
+    // });
+
+    const { temperatures, xMax, xMin } = this.handleData(TEMP);
+    console.log({ temperatures, xMax, xMin });
+    this.setState({ temperatures, xMin, xMax });
+  };
+
+  renderAxisBottom = data => {
+    const axisBottom = [];
+    const daysData = data[0].data;
+    // only keep 31 ticks in the bottom axis
+    daysData.forEach((val, index) => {
+      if (index % Math.ceil(daysData.length / 32) === 0) axisBottom.push(val.x);
+    });
+    return axisBottom;
   };
 
   render() {
@@ -101,83 +124,42 @@ class App extends Component {
             <Title>Cluny Street Brewery</Title>
           </AppBar>
           <GraphContainer>
-            {/* <ResponsiveLine
-              data={this.state.temperatures}
-              margin={{
-                top: 50,
-                right: 110,
-                bottom: 50,
-                left: 60,
-              }}
-              xScale={{
-                type: 'point',
-              }}
-              yScale={{
-                type: 'linear',
-                stacked: true,
-                min: 'auto',
-                max: 'auto',
-              }}
-              axisTop={null}
-              axisRight={null}
-              axisBottom={{
-                orient: 'bottom',
-                tickSize: 5,
-                tickPadding: 5,
-                tickRotation: 0,
-                legend: 'transportation',
-                legendOffset: 36,
-                legendPosition: 'middle',
-              }}
-              axisLeft={{
-                orient: 'left',
-                tickSize: 5,
-                tickPadding: 5,
-                tickRotation: 0,
-                legend: 'count',
-                legendOffset: -40,
-                legendPosition: 'middle',
-              }}
-              dotSize={10}
-              dotColor="inherit:darker(0.3)"
-              dotBorderWidth={2}
-              dotBorderColor="#ffffff"
-              enableDotLabel={true}
-              dotLabel="y"
-              dotLabelYOffset={-12}
-              animate={true}
-              motionStiffness={90}
-              motionDamping={15}
-              legends={[
-                {
-                  anchor: 'bottom-right',
-                  direction: 'column',
-                  justify: false,
-                  translateX: 100,
-                  translateY: 0,
-                  itemsSpacing: 0,
-                  itemDirection: 'left-to-right',
-                  itemWidth: 80,
-                  itemHeight: 20,
-                  itemOpacity: 0.75,
-                  symbolSize: 12,
-                  symbolShape: 'circle',
-                  symbolBorderColor: 'rgba(0, 0, 0, .5)',
-                  effects: [
-                    {
-                      on: 'hover',
-                      style: {
-                        itemBackground: 'rgba(0, 0, 0, .03)',
-                        itemOpacity: 1,
-                      },
-                    },
-                  ],
-                },
-              ]}
-            /> */}
+            {this.state.temperatures.length > 0 && (
+              <ResponsiveLine
+                curve="natural"
+                minY="auto"
+                colors={['royalblue', 'forestgreen', 'gold', 'tomato']}
+                margin={{
+                  top: 20,
+                  right: 50,
+                  bottom: 100,
+                  left: 80,
+                }}
+                axisLeft={{
+                  orient: 'left',
+                  tickSize: 10,
+                  tickPadding: 5,
+                  tickRotation: 0,
+                  legend: 'temperatures',
+                  legendOffset: -50,
+                  legendPosition: 'middle',
+                }}
+                yScale={{
+                  type: 'linear',
+                  stacked: false,
+                  min: this.state.xMin - 2,
+                  max: this.state.xMax + 2,
+                }}
+                axisBottom={{
+                  tickRotation: -45,
+                  tickValues: this.renderAxisBottom(this.state.temperatures),
+                }}
+                data={this.state.temperatures}
+              />
+            )}
           </GraphContainer>
           <ReloadButtonContainer>
-            <Fab color="secondary" aria-label="Reload">
+            <Fab color="secondary" aria-label="Reload" onClick={this.loadData}>
               <CachedIcon />
             </Fab>
           </ReloadButtonContainer>
