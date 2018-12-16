@@ -8,6 +8,7 @@ import CachedIcon from '@material-ui/icons/Cached';
 import AppBar from '@material-ui/core/AppBar';
 import axios from 'axios';
 import CircularProgress from '@material-ui/core/CircularProgress';
+import ErrorOutlined from '@material-ui/icons/ErrorOutlined';
 
 const Page = styled.div`
   background-color: whitesmoke;
@@ -44,8 +45,17 @@ const ReloadButtonContainer = styled.div`
   margin: 3vh;
 `;
 
+const ErrorContainer = styled.div`
+  color: firebrick;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+`;
+
 class App extends Component {
   state = {
+    error: false,
     loading: true,
     temperatures: {},
     xMax: 0,
@@ -59,27 +69,19 @@ class App extends Component {
     let xMax = this.state.xMax;
     const temperatures = [];
     const temperature_average = {
-      id: 'temperature_average',
-      label: 'Average',
-      color: 'red',
+      id: 'Average',
       data: [],
     };
     const temperature_blue = {
-      id: 'temperature_blue',
-      label: 'Blue',
-      color: 'hsl(191, 70%, 50%)',
+      id: 'Blue',
       data: [],
     };
     const temperature_green = {
-      id: 'temperature_green',
-      label: 'Green',
-      color: 'green',
+      id: 'Green',
       data: [],
     };
     const temperature_yellow = {
-      id: 'temperature_yellow',
-      label: 'Yellow',
-      color: 'yellow',
+      id: 'Yellow',
       data: [],
     };
     let prevTime = new Date().toLocaleString();
@@ -99,16 +101,19 @@ class App extends Component {
   };
 
   loadData = () => {
-    const url =
-      'https://cors-anywhere.herokuapp.com/http://benoitprost.synology.me:5031/temperatures';
-    axios.get(url).then(res => {
-      const { temperatures, xMax, xMin } = this.handleData(res.data);
-      this.setState({ temperatures, xMin, xMax, loading: false });
-    });
+    axios
+      .get('https://cors-anywhere.herokuapp.com/http://benoitprost.synology.me:5031/temperatures')
+      .then(res => {
+        const { temperatures, xMax, xMin } = this.handleData(res.data);
+        this.setState({ temperatures, xMin, xMax, loading: false, error: false });
+      })
+      .catch(e => {
+        this.setState({ error: true, loading: false });
+      });
   };
 
   buttonClick = () => {
-    this.setState({ loading: true, temperatures: [] }, () => {
+    this.setState({ loading: true, error: false, temperatures: [] }, () => {
       this.loadData();
     });
   };
@@ -166,6 +171,12 @@ class App extends Component {
               />
             )}
             {this.state.loading && <CircularProgress size={100} />}
+            {this.state.error && (
+              <ErrorContainer>
+                <ErrorOutlined style={{ fontSize: '3em' }} />
+                <p>An error as occurred</p>
+              </ErrorContainer>
+            )}
           </GraphContainer>
           <ReloadButtonContainer>
             <Fab color="secondary" aria-label="Reload" onClick={this.buttonClick}>
