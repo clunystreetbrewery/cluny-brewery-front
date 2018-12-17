@@ -84,9 +84,9 @@ class App extends Component {
       id: 'Yellow',
       data: [],
     };
-    let prevTime = new Date().toLocaleString();
+    let prevTime = '';
     data.forEach(d => {
-      const time = new Date(d.date).toLocaleString();
+      const time = new Date(d.date).toLocaleString('fr');
       if (prevTime === time) return false;
       prevTime = time;
       if (d.temperature_average < xMin) xMin = d.temperature_average;
