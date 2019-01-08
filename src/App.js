@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import styled from 'styled-components';
+import moment from 'moment';
 import GlobalStyle from './GlobalStyle';
 import { ResponsiveLine } from '@nivo/line';
 import Card from '@material-ui/core/Card';
@@ -62,7 +63,10 @@ class App extends Component {
     xMin: 100,
   };
 
-  componentDidMount = () => this.loadData();
+  componentDidMount = () => {
+    moment.locale('fr');
+    this.loadData();
+  };
 
   handleData = data => {
     let xMin = this.state.xMin;
@@ -84,21 +88,31 @@ class App extends Component {
       id: 'Yellow',
       data: [],
     };
-    var oneWeekAgo = new Date();
-    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-    let prevTime = '';
+    var oneWeekAgo = moment().subtract(7, 'days');
+    let prevTime = moment();
     data.forEach(d => {
-      const time = new Date(d.date);
-      if (oneWeekAgo > time) return false;
-      const timeToString = time.toLocaleString('fr');
-      if (prevTime === timeToString) return false;
-      prevTime = timeToString;
+      const time = moment(d.date);
+      if (time.isBefore(oneWeekAgo)) return false;
+      if (prevTime.isSame(time)) return false;
+      prevTime = moment(time);
       if (d.temperature_average < xMin) xMin = d.temperature_average;
       if (d.temperature_average > xMax) xMax = d.temperature_average;
-      temperature_average.data.push({ x: timeToString, y: d.temperature_average.toFixed(2) });
-      temperature_blue.data.push({ x: timeToString, y: d.temperature_blue.toFixed(2) });
-      temperature_green.data.push({ x: timeToString, y: d.temperature_green.toFixed(2) });
-      temperature_yellow.data.push({ x: timeToString, y: d.temperature_yellow.toFixed(2) });
+      temperature_average.data.push({
+        x: time.format('DD/MM, HH:mm'),
+        y: d.temperature_average.toFixed(2),
+      });
+      temperature_blue.data.push({
+        x: time.format('DD/MM, HH:mm'),
+        y: d.temperature_blue.toFixed(2),
+      });
+      temperature_green.data.push({
+        x: time.format('DD/MM, HH:mm'),
+        y: d.temperature_green.toFixed(2),
+      });
+      temperature_yellow.data.push({
+        x: time.format('DD/MM, HH:mm'),
+        y: d.temperature_yellow.toFixed(2),
+      });
     });
     temperatures.push(temperature_blue, temperature_green, temperature_yellow, temperature_average);
     return { temperatures, xMax, xMin };
