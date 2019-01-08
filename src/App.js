@@ -10,6 +10,7 @@ import AppBar from '@material-ui/core/AppBar';
 import axios from 'axios';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import ErrorOutlined from '@material-ui/icons/ErrorOutlined';
+import LastTemperatures from './LastTemperatures';
 
 const Page = styled.div`
   background-color: whitesmoke;
@@ -56,21 +57,21 @@ const ErrorContainer = styled.div`
 
 class App extends Component {
   state = {
+    data: [],
     error: false,
     loading: true,
     temperatures: {},
     xMax: 0,
     xMin: 100,
+    lastId: 0,
   };
 
-  componentDidMount = () => {
-    moment.locale('fr');
-    this.loadData();
-  };
+  componentDidMount = () => this.loadData();
 
   handleData = data => {
     let xMin = this.state.xMin;
     let xMax = this.state.xMax;
+    let lastId = this.state.lastId;
     const temperatures = [];
     const temperature_average = {
       id: 'Average',
@@ -97,6 +98,7 @@ class App extends Component {
       prevTime = moment(time);
       if (d.temperature_average < xMin) xMin = d.temperature_average;
       if (d.temperature_average > xMax) xMax = d.temperature_average;
+      if (lastId < d.id) lastId = d.id;
       temperature_average.data.push({
         x: time.format('DD/MM, HH:mm'),
         y: d.temperature_average.toFixed(2),
@@ -115,7 +117,7 @@ class App extends Component {
       });
     });
     temperatures.push(temperature_blue, temperature_green, temperature_yellow, temperature_average);
-    return { temperatures, xMax, xMin };
+    return { temperatures, xMax, xMin, lastId };
   };
 
   loadData = () => {
@@ -124,8 +126,16 @@ class App extends Component {
         'https://cors-anywhere.herokuapp.com/http://familleprost.synology.me:5031/temperatures/v2.0',
       )
       .then(res => {
-        const { temperatures, xMax, xMin } = this.handleData(res.data);
-        this.setState({ temperatures, xMin, xMax, loading: false, error: false });
+        const { temperatures, xMax, xMin, lastId } = this.handleData(res.data);
+        this.setState({
+          data: res.data,
+          temperatures,
+          xMin,
+          xMax,
+          lastId,
+          loading: false,
+          error: false,
+        });
       })
       .catch(e => {
         console.error(e);
@@ -157,6 +167,9 @@ class App extends Component {
           <AppBar color="primary" position="relative">
             <Title>Cluny Street Brewery</Title>
           </AppBar>
+          {this.state.data.length > 0 && (
+            <LastTemperatures lastId={this.state.lastId} data={this.state.data} />
+          )}
           <GraphContainer>
             {this.state.temperatures.length > 0 && (
               <ResponsiveLine
