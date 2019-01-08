@@ -102,12 +102,15 @@ class App extends Component {
 
   loadData = () => {
     axios
-      .get('https://cors-anywhere.herokuapp.com/http://benoitprost.synology.me:5031/temperatures')
+      .get(
+        'https://cors-anywhere.herokuapp.com/http://familleprost.synology.me:5031/temperatures/v2.0',
+      )
       .then(res => {
         const { temperatures, xMax, xMin } = this.handleData(res.data);
         this.setState({ temperatures, xMin, xMax, loading: false, error: false });
       })
       .catch(e => {
+        console.error(e);
         this.setState({ error: true, loading: false });
       });
   };
