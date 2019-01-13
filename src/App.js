@@ -31,13 +31,17 @@ const Title = styled.div`
   margin: 3vh;
 `;
 
-const GraphContainer = styled(Card)`
+const GraphCard = styled(Card)`
   display: flex;
   align-items: center;
   justify-content: center;
   margin: 2em;
   width: 90vw;
   height: 75vh;
+
+  @media (max-width: 700px) {
+    display: none;
+  }
 `;
 
 const ReloadButtonContainer = styled.div`
@@ -170,7 +174,7 @@ class App extends Component {
           {this.state.data.length > 0 && (
             <LastTemperatures lastId={this.state.lastId} data={this.state.data} />
           )}
-          <GraphContainer>
+          <GraphCard>
             {this.state.temperatures.length > 0 && (
               <ResponsiveLine
                 curve="natural"
@@ -211,10 +215,10 @@ class App extends Component {
                 <p>An error as occurred</p>
               </ErrorContainer>
             )}
-          </GraphContainer>
+          </GraphCard>
           <ReloadButtonContainer>
             <Fab color="secondary" aria-label="Reload" onClick={this.buttonClick}>
-              <CachedIcon />
+              {this.state.loading ? <CircularProgress color="white" size={25} /> : <CachedIcon />}
             </Fab>
           </ReloadButtonContainer>
         </Container>
