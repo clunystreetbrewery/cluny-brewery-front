@@ -1,15 +1,17 @@
-import React, { Component } from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import moment from 'moment';
-import GlobalStyle from './GlobalStyle';
+import axios from 'axios';
+
 import { ResponsiveLine } from '@nivo/line';
 import Card from '@material-ui/core/Card';
 import Fab from '@material-ui/core/Fab';
 import CachedIcon from '@material-ui/icons/Cached';
 import AppBar from '@material-ui/core/AppBar';
-import axios from 'axios';
-import CircularProgress from '@material-ui/core/CircularProgress';
 import ErrorOutlined from '@material-ui/icons/ErrorOutlined';
+import CircularProgress from '@material-ui/core/CircularProgress';
+
+import GlobalStyle from './GlobalStyle';
 import LastTemperatures from './LastTemperatures';
 
 const Page = styled.div`
@@ -59,28 +61,22 @@ const ErrorContainer = styled.div`
   justify-content: center;
 `;
 
-class App extends Component {
-  state = {
-    data: [],
-    error: false,
-    loading: true,
-    temperatures: {},
-    xMax: 0,
-    xMin: 100,
-    lastId: 0,
-  };
+const App = () => {
+  const [data, setData] = useState([]);
+  const [error, setError] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [temperatures, setTemperatures] = useState([]);
+  const [xMax, setXMax] = useState(0);
+  const [xMin, setXMin] = useState(100);
+  const [lastId, setLastId] = useState(0);
 
-  componentDidMount = () => this.loadData();
+  useEffect(() => loadData(), []);
 
-  handleData = data => {
-    let xMin = this.state.xMin;
-    let xMax = this.state.xMax;
-    let lastId = this.state.lastId;
-    const temperatures = [];
-    const temperature_average = {
-      id: 'Average',
-      data: [],
-    };
+  const handleData = (data) => {
+    let max = xMax;
+    let min = xMin;
+    let last = lastId;
+    const newTemperatures = [];
     const temperature_blue = {
       id: 'Blue',
       data: [],
@@ -89,24 +85,18 @@ class App extends Component {
       id: 'Green',
       data: [],
     };
-    const temperature_yellow = {
-      id: 'Yellow',
-      data: [],
-    };
     var oneWeekAgo = moment().subtract(7, 'days');
     let prevTime = moment();
-    data.forEach(d => {
+    data.forEach((d) => {
       const time = moment(d.date);
       if (time.isBefore(oneWeekAgo)) return false;
       if (prevTime.isSame(time)) return false;
       prevTime = moment(time);
-      if (d.temperature_average < xMin) xMin = d.temperature_average;
-      if (d.temperature_average > xMax) xMax = d.temperature_average;
-      if (lastId < d.id) lastId = d.id;
-      temperature_average.data.push({
-        x: time.format('DD/MM, HH:mm'),
-        y: d.temperature_average.toFixed(2),
-      });
+
+      if (d.temperature_blue < min) min = d.temperature_blue;
+      if (d.temperature_blue > max) max = d.temperature_blue;
+      if (last < d.id) last = d.id;
+
       temperature_blue.data.push({
         x: time.format('DD/MM, HH:mm'),
         y: d.temperature_blue.toFixed(2),
@@ -115,45 +105,34 @@ class App extends Component {
         x: time.format('DD/MM, HH:mm'),
         y: d.temperature_green.toFixed(2),
       });
-      temperature_yellow.data.push({
-        x: time.format('DD/MM, HH:mm'),
-        y: d.temperature_yellow.toFixed(2),
-      });
     });
-    temperatures.push(temperature_blue, temperature_green, temperature_yellow, temperature_average);
-    return { temperatures, xMax, xMin, lastId };
+    newTemperatures.push(temperature_blue, temperature_green);
+    return { newTemperatures, max, min, last };
   };
 
-  loadData = () => {
+  const loadData = () => {
+    setLoading(true);
+    setError(false);
     axios
-      .get(
-        'https://cors-anywhere.herokuapp.com/http://3.20.162.22:6789/temperatures/v2.0',
-      )
-      .then(res => {
-        const { temperatures, xMax, xMin, lastId } = this.handleData(res.data);
-        this.setState({
-          data: res.data,
-          temperatures,
-          xMin,
-          xMax,
-          lastId,
-          loading: false,
-          error: false,
-        });
+      .get('https://cors-anywhere.herokuapp.com/http://3.20.162.22:6789/temperatures/v2.0')
+      .then((res) => {
+        console.log(res.data);
+        const { newTemperatures, max, min, last } = handleData(res.data);
+        setData(res.data);
+        setTemperatures(newTemperatures);
+        setXMax(max);
+        setXMin(min);
+        setLastId(last);
+        setLoading(false);
       })
-      .catch(e => {
+      .catch((e) => {
         console.error(e);
-        this.setState({ error: true, loading: false });
+        setLoading(false);
+        setError(true);
       });
   };
 
-  buttonClick = () => {
-    this.setState({ loading: true, error: false, temperatures: [] }, () => {
-      this.loadData();
-    });
-  };
-
-  renderAxisBottom = data => {
+  const renderAxisBottom = (data) => {
     const axisBottom = [];
     const daysData = data[0].data;
     // only keep 31 ticks in the bottom axis
@@ -163,68 +142,64 @@ class App extends Component {
     return axisBottom;
   };
 
-  render() {
-    return (
-      <Page>
-        <GlobalStyle />
-        <Container>
-          <AppBar color="primary" position="relative">
-            <Title>Cluny Street Brewery</Title>
-          </AppBar>
-          {this.state.data.length > 0 && (
-            <LastTemperatures lastId={this.state.lastId} data={this.state.data} />
+  return (
+    <Page>
+      <GlobalStyle />
+      <Container>
+        <AppBar color="primary" position="relative">
+          <Title>Cluny Street Brewery</Title>
+        </AppBar>
+        {data.length > 0 && <LastTemperatures lastTemp={data.find((d) => d.id === lastId)} />}
+        <GraphCard>
+          {temperatures.length > 0 && (
+            <ResponsiveLine
+              curve="natural"
+              minY="auto"
+              colors={['royalblue', 'forestgreen']}
+              margin={{
+                top: 20,
+                right: 50,
+                bottom: 100,
+                left: 80,
+              }}
+              axisLeft={{
+                orient: 'left',
+                tickSize: 10,
+                tickPadding: 5,
+                tickRotation: 0,
+                legend: 'temperatures',
+                legendOffset: -50,
+                legendPosition: 'middle',
+              }}
+              yScale={{
+                type: 'linear',
+                stacked: false,
+                min: xMin - 2,
+                max: xMax + 2,
+              }}
+              axisBottom={{
+                tickRotation: -45,
+                tickValues: renderAxisBottom(temperatures),
+              }}
+              data={temperatures}
+            />
           )}
-          <GraphCard>
-            {this.state.temperatures.length > 0 && (
-              <ResponsiveLine
-                curve="natural"
-                minY="auto"
-                colors={['royalblue', 'forestgreen', 'gold', 'tomato']}
-                margin={{
-                  top: 20,
-                  right: 50,
-                  bottom: 100,
-                  left: 80,
-                }}
-                axisLeft={{
-                  orient: 'left',
-                  tickSize: 10,
-                  tickPadding: 5,
-                  tickRotation: 0,
-                  legend: 'temperatures',
-                  legendOffset: -50,
-                  legendPosition: 'middle',
-                }}
-                yScale={{
-                  type: 'linear',
-                  stacked: false,
-                  min: this.state.xMin - 2,
-                  max: this.state.xMax + 2,
-                }}
-                axisBottom={{
-                  tickRotation: -45,
-                  tickValues: this.renderAxisBottom(this.state.temperatures),
-                }}
-                data={this.state.temperatures}
-              />
-            )}
-            {this.state.loading && <CircularProgress size={100} />}
-            {this.state.error && (
-              <ErrorContainer>
-                <ErrorOutlined style={{ fontSize: '3em' }} />
-                <p>An error as occurred</p>
-              </ErrorContainer>
-            )}
-          </GraphCard>
-          <ReloadButtonContainer>
-            <Fab color="secondary" aria-label="Reload" onClick={this.buttonClick}>
-              {this.state.loading ? <CircularProgress color="white" size={25} /> : <CachedIcon />}
-            </Fab>
-          </ReloadButtonContainer>
-        </Container>
-      </Page>
-    );
-  }
-}
+          {loading && <CircularProgress size={100} />}
+          {error && (
+            <ErrorContainer>
+              <ErrorOutlined style={{ fontSize: '3em' }} />
+              <p>An error as occurred</p>
+            </ErrorContainer>
+          )}
+        </GraphCard>
+        <ReloadButtonContainer>
+          <Fab color="secondary" aria-label="Reload" onClick={loadData}>
+            {loading ? <CircularProgress color="primary" size={25} /> : <CachedIcon />}
+          </Fab>
+        </ReloadButtonContainer>
+      </Container>
+    </Page>
+  );
+};
 
 export default App;
