@@ -33,7 +33,7 @@ const Color = styled.div`
   margin-right: 0.5em;
   height: 1em;
   width: 1em;
-  background-color: ${props => props.color};
+  background-color: ${(props) => props.color};
 `;
 
 const Temperature = styled.p`
@@ -43,60 +43,32 @@ const Temperature = styled.p`
   text-align: left;
 `;
 
-const Average = styled.p`
-  font-weight: bolder;
-  margin: 0 0.5em 0 0;
-  color: tomato;
-`;
+const LastTemperatures = ({ lastTemp }) => {
+  if (!lastTemp) return null;
 
-class LastTemperatures extends React.PureComponent {
-  constructor(props) {
-    super(props);
-    const lastData = props.data.find(d => d.id === props.lastId);
-    this.state = {
-      lastTimeFromNow: moment(lastData.date).fromNow(),
-      lastAverageTemp: lastData.temperature_average.toFixed(2),
-      lastBlueTemp: lastData.temperature_blue.toFixed(2),
-      lastYellowTemp: lastData.temperature_yellow.toFixed(2),
-      lastGreenTemp: lastData.temperature_green.toFixed(2),
-    };
-  }
+  const lastTimeFromNow = moment(lastTemp.date).fromNow();
+  const lastBlueTemp = lastTemp.temperature_blue.toFixed(2);
+  const lastGreenTemp = lastTemp.temperature_green.toFixed(2);
 
-  render = () => (
+  return (
     <LastTemperaturesContainer>
-      <LastTemperatureTitle>
-        Last temperature records from {this.state.lastTimeFromNow}
-      </LastTemperatureTitle>
-      <LastTemperature style={{ marginTop: '1em' }}>
-        <Average>Average:</Average>
-        <Temperature>
-          {this.state.lastAverageTemp}
-          °C
-        </Temperature>
-      </LastTemperature>
+      <LastTemperatureTitle>Last temperature records from {lastTimeFromNow}</LastTemperatureTitle>
       <LastTemperature>
         <Color color="royalblue" />
         <Temperature>
-          {this.state.lastBlueTemp}
+          {lastBlueTemp}
           °C
         </Temperature>
       </LastTemperature>
       <LastTemperature>
         <Color color="forestgreen" />
         <Temperature>
-          {this.state.lastGreenTemp}
-          °C
-        </Temperature>
-      </LastTemperature>
-      <LastTemperature>
-        <Color color="gold" />
-        <Temperature>
-          {this.state.lastYellowTemp}
+          {lastGreenTemp}
           °C
         </Temperature>
       </LastTemperature>
     </LastTemperaturesContainer>
   );
-}
+};
 
 export default LastTemperatures;
