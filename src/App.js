@@ -85,6 +85,10 @@ const App = () => {
       id: 'Green',
       data: [],
     };
+    const temperature_yellow = {
+      id: 'Yellow',
+      data: [],
+    };
     var oneWeekAgo = moment().subtract(7, 'days');
     let prevTime = moment();
     data.forEach((d) => {
@@ -94,7 +98,7 @@ const App = () => {
       prevTime = moment(time);
 
       if (d.temperature_blue < min) min = d.temperature_blue;
-      if (d.temperature_blue > max) max = d.temperature_blue;
+      if (d.temperature_blue > max) max = d.temperature_yellow;
       if (last < d.id) last = d.id;
 
       temperature_blue.data.push({
@@ -105,8 +109,12 @@ const App = () => {
         x: time.format('DD/MM, HH:mm'),
         y: d.temperature_green.toFixed(2),
       });
+      temperature_yellow.data.push({
+        x: time.format('DD/MM, HH:mm'),
+        y: d.temperature_yellow.toFixed(2),
+      });
     });
-    newTemperatures.push(temperature_blue, temperature_green);
+    newTemperatures.push(temperature_blue, temperature_green, temperature_yellow);
     return { newTemperatures, max, min, last };
   };
 
@@ -155,7 +163,7 @@ const App = () => {
             <ResponsiveLine
               curve="natural"
               minY="auto"
-              colors={['royalblue', 'forestgreen']}
+              colors={['royalblue', 'forestgreen', 'gold']}
               margin={{
                 top: 20,
                 right: 50,

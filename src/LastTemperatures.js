@@ -49,10 +49,19 @@ const LastTemperatures = ({ lastTemp }) => {
   const lastTimeFromNow = moment(lastTemp.date).fromNow();
   const lastBlueTemp = lastTemp.temperature_blue.toFixed(2);
   const lastGreenTemp = lastTemp.temperature_green.toFixed(2);
+  const lastYellowTemp = lastTemp.temperature_yellow.toFixed(2);
 
   return (
     <LastTemperaturesContainer>
       <LastTemperatureTitle>Last temperature records from {lastTimeFromNow}</LastTemperatureTitle>
+      <LastTemperature>
+        Outside fridge :
+        <Color style={{ marginLeft: 10 }} color="gold" />
+        <Temperature>
+          {lastYellowTemp}
+          °C
+        </Temperature>
+      </LastTemperature>
       <LastTemperature>
         <Color color="royalblue" />
         <Temperature>
