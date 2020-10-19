@@ -10,9 +10,17 @@ import CachedIcon from '@material-ui/icons/Cached';
 import AppBar from '@material-ui/core/AppBar';
 import ErrorOutlined from '@material-ui/icons/ErrorOutlined';
 import CircularProgress from '@material-ui/core/CircularProgress';
+import { timeFormat } from 'd3-time-format';
 
 import GlobalStyle from './GlobalStyle';
 import LastTemperatures from './LastTemperatures';
+
+
+
+const timeFormatDef = "%Y-%m-%d %H:%M:%S"
+const timeFormatNew = timeFormat(timeFormatDef);
+
+
 
 const Page = styled.div`
   background-color: whitesmoke;
@@ -102,15 +110,15 @@ const App = () => {
       if (last < d.id) last = d.id;
 
       temperature_blue.data.push({
-        x: time.format('DD/MM, HH:mm'),
+        x: timeFormatNew(time),
         y: d.temperature_blue.toFixed(2),
       });
       temperature_green.data.push({
-        x: time.format('DD/MM, HH:mm'),
+        x: timeFormatNew(time),
         y: d.temperature_green.toFixed(2),
       });
       temperature_yellow.data.push({
-        x: time.format('DD/MM, HH:mm'),
+        x: timeFormatNew(time),
         y: d.temperature_yellow.toFixed(2),
       });
     });
@@ -185,10 +193,16 @@ const App = () => {
                 min: xMin - 2,
                 max: xMax + 2,
               }}
+              xScale={{
+				type: 'time',
+				format: timeFormatDef,
+				precision: 'second',
+			  }}
               axisBottom={{
-                tickRotation: -45,
-                tickValues: renderAxisBottom(temperatures),
-              }}
+	            format: "%d/%m %Hh%m",
+	            tickRotation: -45,
+	            tickValues: 20,
+	          }}
               data={temperatures}
             />
           )}
