@@ -130,7 +130,7 @@ const App = () => {
     setLoading(true);
     setError(false);
     axios
-      .get('https://cors-anywhere.herokuapp.com/http://3.20.162.22:6789/temperatures/v2.0')
+      .get('https://cors-anywhere.herokuapp.com/http://35.180.229.230:6789/temperatures/v2.0')
       .then((res) => {
         console.log(res.data);
         const { newTemperatures, max, min, last } = handleData(res.data);
