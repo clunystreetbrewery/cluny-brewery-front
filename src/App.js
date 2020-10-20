@@ -97,13 +97,9 @@ const App = () => {
       id: 'Yellow',
       data: [],
     };
-    var oneWeekAgo = moment().subtract(7, 'days');
-    let prevTime = moment();
+    //let prevTime = moment();
     data.forEach((d) => {
       const time = moment(d.date);
-      if (time.isBefore(oneWeekAgo)) return false;
-      if (prevTime.isSame(time)) return false;
-      prevTime = moment(time);
 
       if (d.temperature_blue < min) min = d.temperature_blue;
       if (d.temperature_blue > max) max = d.temperature_yellow;
@@ -126,16 +122,29 @@ const App = () => {
     return { newTemperatures, max, min, last };
   };
 
-  const loadData = () => {
+  const loadData = (dayRange = 3) => {
     setLoading(true);
     setError(false);
+    var today = new Date(Date.now());
+    var firstDate = new Date();
+    firstDate.setDate(today.getDate() - dayRange);
+
+    var urlTest = "http://35.180.229.230:6789/temperatures/select/v2.0?start=2020-10-19+14:40:15&end=2020-10-20+14:40:15";
+    var firstDateString = timeFormatNew(firstDate);
+    var todayString = timeFormatNew(today);
+
+    var url = "http://35.180.229.230:6789/temperatures/select/v2.0?start=" + firstDateString + "&end=" + todayString;
+    url = url.replaceAll(" ", "+");
+
+
     axios
-      .get('https://cors-anywhere.herokuapp.com/http://35.180.229.230:6789/temperatures/v2.0')
+      .get(url)
       .then((res) => {
-        console.log(res.data);
         const { newTemperatures, max, min, last } = handleData(res.data);
         setData(res.data);
+        console.log(newTemperatures);
         setTemperatures(newTemperatures);
+        console.log("bloque")
         setXMax(max);
         setXMin(min);
         setLastId(last);
@@ -199,7 +208,7 @@ const App = () => {
 				precision: 'second',
 			  }}
               axisBottom={{
-	            format: "%d/%m %Hh%m",
+	            format: "%d/%m %H:%m",
 	            tickRotation: -45,
 	            tickValues: 20,
 	          }}
