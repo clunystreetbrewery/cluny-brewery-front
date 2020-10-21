@@ -12,6 +12,15 @@ import ErrorOutlined from '@material-ui/icons/ErrorOutlined';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import { timeFormat } from 'd3-time-format';
 
+
+import InputLabel from '@material-ui/core/InputLabel';
+import MenuItem from '@material-ui/core/MenuItem';
+import FormHelperText from '@material-ui/core/FormHelperText';
+import FormControl from '@material-ui/core/FormControl';
+import Select from '@material-ui/core/Select';
+
+
+
 import GlobalStyle from './GlobalStyle';
 import LastTemperatures from './LastTemperatures';
 
@@ -77,8 +86,26 @@ const App = () => {
   const [xMax, setXMax] = useState(0);
   const [xMin, setXMin] = useState(100);
   const [lastId, setLastId] = useState(0);
+  const [dayRange, setDayRange] = useState(7);
+  const [dayRange_, setDayRange_] = useState(7);
+
 
   useEffect(() => loadData(), []);
+  useEffect(() => {
+    loadData();
+	}, [dayRange]);
+
+
+  const handleDayRangeChange = (event) => {
+  	console.log(event.target.value);
+    //setDayRange(event.target.value);
+    //console.log(dayRange);
+    setDayRange(event.target.value);//, function () {
+    //	console.log(dayRange);
+    //	loadData();
+	//});
+  };
+
 
   const handleData = (data) => {
     let max = xMax;
@@ -121,7 +148,6 @@ const App = () => {
   };
 
   const loadData = () => {
-  	const dayRange = 3;
 
     setLoading(true);
     setError(false);
@@ -161,7 +187,6 @@ const App = () => {
     });
     return axisBottom;
   };
-  // {data.length > 0 && <LastTemperatures lastTemp={data.find((d) => d.id === lastId)} />}
 
   return (
     <Page>
@@ -171,6 +196,17 @@ const App = () => {
           <Title>Cluny Street Brewery</Title>
         </AppBar>
         {data.length > 0 && <LastTemperatures lastTemp={data.find((d) => d.id === lastId)} />}
+
+        <Select
+          value={dayRange}
+          onChange={handleDayRangeChange}
+        >
+          <MenuItem value={1}>One day</MenuItem>
+          <MenuItem value={7}>One week</MenuItem>
+          <MenuItem value={30}>One month</MenuItem>
+          <MenuItem value={365}>One year</MenuItem>
+        </Select>
+
         <GraphCard>
           {temperatures.length > 0 && (
             <ResponsiveLine
