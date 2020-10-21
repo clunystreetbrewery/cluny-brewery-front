@@ -120,23 +120,35 @@ const App = () => {
       data: [],
     };
 
-    data.forEach((d) => {
-      if (d.temperature_blue < min) min = d.temperature_blue;
-      if (d.temperature_blue > max) max = d.temperature_yellow;
-      if (last < d.id) last = d.id;
+    // Max number of points
+    const maxPointsNumber = 200;
+    const intervalBetweenPoints = data.length / maxPointsNumber;
+    var counter = 0
 
-      temperature_blue.data.push({
-        x: d.date,
-        y: d.temperature_blue.toFixed(2),
-      });
-      temperature_green.data.push({
-        x: d.date,
-        y: d.temperature_green.toFixed(2),
-      });
-      temperature_yellow.data.push({
-        x: d.date,
-        y: d.temperature_yellow.toFixed(2),
-      });
+    data.forEach((d) => {
+      if (counter < intervalBetweenPoints) {
+      	  counter += 1;
+      }
+      else{
+      	  counter = 0;
+      	  if (d.temperature_blue < min) min = d.temperature_blue;
+	      if (d.temperature_blue > max) max = d.temperature_yellow;
+	      if (last < d.id) last = d.id;
+
+	      temperature_blue.data.push({
+	        x: d.date,
+	        y: d.temperature_blue.toFixed(2),
+	      });
+	      temperature_green.data.push({
+	        x: d.date,
+	        y: d.temperature_green.toFixed(2),
+	      });
+	      temperature_yellow.data.push({
+	        x: d.date,
+	        y: d.temperature_yellow.toFixed(2),
+	      });
+      }
+      
     });
     newTemperatures.push(temperature_blue, temperature_green, temperature_yellow);
     return { newTemperatures, max, min, last };
