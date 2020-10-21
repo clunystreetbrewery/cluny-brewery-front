@@ -97,24 +97,22 @@ const App = () => {
       id: 'Yellow',
       data: [],
     };
-    //let prevTime = moment();
-    data.forEach((d) => {
-      const time = moment(d.date);
 
+    data.forEach((d) => {
       if (d.temperature_blue < min) min = d.temperature_blue;
       if (d.temperature_blue > max) max = d.temperature_yellow;
       if (last < d.id) last = d.id;
 
       temperature_blue.data.push({
-        x: timeFormatNew(time),
+        x: d.date,
         y: d.temperature_blue.toFixed(2),
       });
       temperature_green.data.push({
-        x: timeFormatNew(time),
+        x: d.date,
         y: d.temperature_green.toFixed(2),
       });
       temperature_yellow.data.push({
-        x: timeFormatNew(time),
+        x: d.date,
         y: d.temperature_yellow.toFixed(2),
       });
     });
@@ -122,29 +120,25 @@ const App = () => {
     return { newTemperatures, max, min, last };
   };
 
-  const loadData = (dayRange = 3) => {
+  const loadData = () => {
+  	const dayRange = 3;
+
     setLoading(true);
     setError(false);
     var today = new Date(Date.now());
     var firstDate = new Date();
     firstDate.setDate(today.getDate() - dayRange);
-
-    var urlTest = "http://35.180.229.230:6789/temperatures/select/v2.0?start=2020-10-19+14:40:15&end=2020-10-20+14:40:15";
     var firstDateString = timeFormatNew(firstDate);
     var todayString = timeFormatNew(today);
 
     var url = "http://35.180.229.230:6789/temperatures/select/v2.0?start=" + firstDateString + "&end=" + todayString;
-    url = url.replaceAll(" ", "+");
-
 
     axios
       .get(url)
       .then((res) => {
         const { newTemperatures, max, min, last } = handleData(res.data);
         setData(res.data);
-        console.log(newTemperatures);
         setTemperatures(newTemperatures);
-        console.log("bloque")
         setXMax(max);
         setXMin(min);
         setLastId(last);
@@ -157,6 +151,7 @@ const App = () => {
       });
   };
 
+
   const renderAxisBottom = (data) => {
     const axisBottom = [];
     const daysData = data[0].data;
@@ -166,6 +161,7 @@ const App = () => {
     });
     return axisBottom;
   };
+  // {data.length > 0 && <LastTemperatures lastTemp={data.find((d) => d.id === lastId)} />}
 
   return (
     <Page>
