@@ -97,7 +97,6 @@ const App = () => {
 
 
   const handleDayRangeChange = (event) => {
-  	console.log(event.target.value);
     setDayRange(event.target.value);
   };
 
@@ -121,16 +120,16 @@ const App = () => {
     };
 
     // Max number of points
-    const maxPointsNumber = 200;
+    const maxPointsNumber = 250;
     const intervalBetweenPoints = data.length / maxPointsNumber;
-    var counter = 0
+    var counter = 1
 
     data.forEach((d) => {
       if (counter < intervalBetweenPoints) {
       	  counter += 1;
       }
       else{
-      	  counter = 0;
+      	  counter = 1;
       	  if (d.temperature_blue < min) min = d.temperature_blue;
 	      if (d.temperature_blue > max) max = d.temperature_yellow;
 	      if (last < d.id) last = d.id;
@@ -160,11 +159,16 @@ const App = () => {
     setError(false);
     var today = new Date(Date.now());
     var firstDate = new Date();
+
+
     firstDate.setDate(today.getDate() - dayRange);
     var firstDateString = timeFormatNew(firstDate);
     var todayString = timeFormatNew(today);
-
     var url = "http://35.180.229.230:6789/temperatures/select/v2.0?start=" + firstDateString + "&end=" + todayString;
+
+    if (dayRange == 0) {
+    	url = "http://35.180.229.230:6789/temperatures/select/v2.0";
+    } 
 
     axios
       .get(url)
@@ -212,6 +216,7 @@ const App = () => {
           <MenuItem value={7}>One week</MenuItem>
           <MenuItem value={30}>One month</MenuItem>
           <MenuItem value={365}>One year</MenuItem>
+          <MenuItem value={0}>All time</MenuItem>
         </Select>
 
         <GraphCard>
