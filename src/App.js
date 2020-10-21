@@ -98,12 +98,7 @@ const App = () => {
 
   const handleDayRangeChange = (event) => {
   	console.log(event.target.value);
-    //setDayRange(event.target.value);
-    //console.log(dayRange);
-    setDayRange(event.target.value);//, function () {
-    //	console.log(dayRange);
-    //	loadData();
-	//});
+    setDayRange(event.target.value);
   };
 
 
