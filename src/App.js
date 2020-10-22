@@ -12,14 +12,21 @@ import ErrorOutlined from '@material-ui/icons/ErrorOutlined';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import { timeFormat } from 'd3-time-format';
 
+
+import InputLabel from '@material-ui/core/InputLabel';
+import MenuItem from '@material-ui/core/MenuItem';
+import FormHelperText from '@material-ui/core/FormHelperText';
+import FormControl from '@material-ui/core/FormControl';
+import Select from '@material-ui/core/Select';
+
+
+
 import GlobalStyle from './GlobalStyle';
 import LastTemperatures from './LastTemperatures';
 
 
-
 const timeFormatDef = "%Y-%m-%d %H:%M:%S"
 const timeFormatNew = timeFormat(timeFormatDef);
-
 
 
 const Page = styled.div`
@@ -77,8 +84,18 @@ const App = () => {
   const [xMax, setXMax] = useState(0);
   const [xMin, setXMin] = useState(100);
   const [lastId, setLastId] = useState(0);
+  const [dayRange, setDayRange] = useState(7);
 
   useEffect(() => loadData(), []);
+  useEffect(() => {
+    loadData();
+	}, [dayRange]);
+
+
+  const handleDayRangeChange = (event) => {
+    setDayRange(event.target.value);
+  };
+
 
   const handleData = (data) => {
     let max = xMax;
@@ -97,42 +114,61 @@ const App = () => {
       id: 'Yellow',
       data: [],
     };
-    var oneWeekAgo = moment().subtract(7, 'days');
-    let prevTime = moment();
+
+    // Max number of points
+    const maxPointsNumber = 250;
+    const intervalBetweenPoints = data.length / maxPointsNumber;
+           let counter = 1;
+
     data.forEach((d) => {
-      const time = moment(d.date);
-      if (time.isBefore(oneWeekAgo)) return false;
-      if (prevTime.isSame(time)) return false;
-      prevTime = moment(time);
+      if (counter < intervalBetweenPoints) {
+      	  counter += 1;
+      }
+      else{
+      	  counter = 1;
+      	  if (d.temperature_blue < min) min = d.temperature_blue;
+	      if (d.temperature_blue > max) max = d.temperature_yellow;
+	      if (last < d.id) last = d.id;
 
-      if (d.temperature_blue < min) min = d.temperature_blue;
-      if (d.temperature_blue > max) max = d.temperature_yellow;
-      if (last < d.id) last = d.id;
-
-      temperature_blue.data.push({
-        x: timeFormatNew(time),
-        y: d.temperature_blue.toFixed(2),
-      });
-      temperature_green.data.push({
-        x: timeFormatNew(time),
-        y: d.temperature_green.toFixed(2),
-      });
-      temperature_yellow.data.push({
-        x: timeFormatNew(time),
-        y: d.temperature_yellow.toFixed(2),
-      });
+	      temperature_blue.data.push({
+	        x: d.date,
+	        y: d.temperature_blue.toFixed(2),
+	      });
+	      temperature_green.data.push({
+	        x: d.date,
+	        y: d.temperature_green.toFixed(2),
+	      });
+	      temperature_yellow.data.push({
+	        x: d.date,
+	        y: d.temperature_yellow.toFixed(2),
+	      });
+      }
+      
     });
     newTemperatures.push(temperature_blue, temperature_green, temperature_yellow);
     return { newTemperatures, max, min, last };
   };
 
   const loadData = () => {
+
     setLoading(true);
     setError(false);
+    let today = new Date(Date.now());
+    let firstDate = new Date();
+
+    let url = "http://35.180.229.230:6789/temperatures/select/v2.0";
+
+    if (dayRange > 0) {
+      firstDate.setDate(today.getDate() - dayRange);
+      let firstDateString = timeFormatNew(firstDate);
+      let todayString = timeFormatNew(today);
+      url = url + "?start=" + firstDateString + "&end=" + todayString;
+    }
+    
+
     axios
-      .get('https://cors-anywhere.herokuapp.com/http://35.180.229.230:6789/temperatures/v2.0')
+      .get(url)
       .then((res) => {
-        console.log(res.data);
         const { newTemperatures, max, min, last } = handleData(res.data);
         setData(res.data);
         setTemperatures(newTemperatures);
@@ -148,6 +184,7 @@ const App = () => {
       });
   };
 
+
   const renderAxisBottom = (data) => {
     const axisBottom = [];
     const daysData = data[0].data;
@@ -162,10 +199,22 @@ const App = () => {
     <Page>
       <GlobalStyle />
       <Container>
-        <AppBar color="primary" position="relative">
+          <AppBar color="primary" position="relative">
           <Title>Cluny Street Brewery</Title>
         </AppBar>
         {data.length > 0 && <LastTemperatures lastTemp={data.find((d) => d.id === lastId)} />}
+
+        <Select
+          value={dayRange}
+          onChange={handleDayRangeChange}
+        >
+          <MenuItem value={1}>One day</MenuItem>
+          <MenuItem value={7}>One week</MenuItem>
+          <MenuItem value={30}>One month</MenuItem>
+          <MenuItem value={365}>One year</MenuItem>
+          <MenuItem value={0}>All time</MenuItem>
+        </Select>
+
         <GraphCard>
           {temperatures.length > 0 && (
             <ResponsiveLine
@@ -194,12 +243,12 @@ const App = () => {
                 max: xMax + 2,
               }}
               xScale={{
-				type: 'time',
-				format: timeFormatDef,
-				precision: 'second',
-			  }}
+        				type: 'time',
+        				format: timeFormatDef,
+        				precision: 'second',
+        			  }}
               axisBottom={{
-	            format: "%d/%m %Hh%m",
+	            format: "%d/%m %H:%m",
 	            tickRotation: -45,
 	            tickValues: 20,
 	          }}
