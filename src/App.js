@@ -25,10 +25,8 @@ import GlobalStyle from './GlobalStyle';
 import LastTemperatures from './LastTemperatures';
 
 
-
 const timeFormatDef = "%Y-%m-%d %H:%M:%S"
 const timeFormatNew = timeFormat(timeFormatDef);
-
 
 
 const Page = styled.div`
@@ -87,8 +85,6 @@ const App = () => {
   const [xMin, setXMin] = useState(100);
   const [lastId, setLastId] = useState(0);
   const [dayRange, setDayRange] = useState(7);
-  const [dayRange_, setDayRange_] = useState(7);
-
 
   useEffect(() => loadData(), []);
   useEffect(() => {
@@ -122,7 +118,7 @@ const App = () => {
     // Max number of points
     const maxPointsNumber = 250;
     const intervalBetweenPoints = data.length / maxPointsNumber;
-    var counter = 1
+           let counter = 1;
 
     data.forEach((d) => {
       if (counter < intervalBetweenPoints) {
@@ -157,18 +153,18 @@ const App = () => {
 
     setLoading(true);
     setError(false);
-    var today = new Date(Date.now());
-    var firstDate = new Date();
+    let today = new Date(Date.now());
+    let firstDate = new Date();
 
+    let url = "http://35.180.229.230:6789/temperatures/select/v2.0";
 
-    firstDate.setDate(today.getDate() - dayRange);
-    var firstDateString = timeFormatNew(firstDate);
-    var todayString = timeFormatNew(today);
-    var url = "http://35.180.229.230:6789/temperatures/select/v2.0?start=" + firstDateString + "&end=" + todayString;
-
-    if (dayRange == 0) {
-    	url = "http://35.180.229.230:6789/temperatures/select/v2.0";
-    } 
+    if (dayRange > 0) {
+      firstDate.setDate(today.getDate() - dayRange);
+      let firstDateString = timeFormatNew(firstDate);
+      let todayString = timeFormatNew(today);
+      url = url + "?start=" + firstDateString + "&end=" + todayString;
+    }
+    
 
     axios
       .get(url)
@@ -203,7 +199,7 @@ const App = () => {
     <Page>
       <GlobalStyle />
       <Container>
-        <AppBar color="primary" position="relative">
+          <AppBar color="primary" position="relative">
           <Title>Cluny Street Brewery</Title>
         </AppBar>
         {data.length > 0 && <LastTemperatures lastTemp={data.find((d) => d.id === lastId)} />}
@@ -247,10 +243,10 @@ const App = () => {
                 max: xMax + 2,
               }}
               xScale={{
-				type: 'time',
-				format: timeFormatDef,
-				precision: 'second',
-			  }}
+        				type: 'time',
+        				format: timeFormatDef,
+        				precision: 'second',
+        			  }}
               axisBottom={{
 	            format: "%d/%m %H:%m",
 	            tickRotation: -45,
