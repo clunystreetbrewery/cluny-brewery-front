@@ -156,7 +156,7 @@ const App = () => {
     let today = new Date(Date.now());
     let firstDate = new Date();
 
-    let url = "http://35.180.229.230:6789/temperatures/select/v2.0";
+    let url = "https://cors-anywhere.herokuapp.com/http://35.180.229.230:6789/temperatures/select/v2.0";
 
     if (dayRange > 0) {
       firstDate.setDate(today.getDate() - dayRange);
