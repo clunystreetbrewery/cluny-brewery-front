@@ -1,33 +1,24 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import styled from 'styled-components';
-import moment from 'moment';
 import axios from 'axios';
 
+import { timeFormat } from 'd3-time-format';
 import { ResponsiveLine } from '@nivo/line';
-import Card from '@material-ui/core/Card';
-import Fab from '@material-ui/core/Fab';
+
 import CachedIcon from '@material-ui/icons/Cached';
 import AppBar from '@material-ui/core/AppBar';
 import ErrorOutlined from '@material-ui/icons/ErrorOutlined';
 import CircularProgress from '@material-ui/core/CircularProgress';
-import { timeFormat } from 'd3-time-format';
-
-
-import InputLabel from '@material-ui/core/InputLabel';
+import Card from '@material-ui/core/Card';
+import Fab from '@material-ui/core/Fab';
 import MenuItem from '@material-ui/core/MenuItem';
-import FormHelperText from '@material-ui/core/FormHelperText';
-import FormControl from '@material-ui/core/FormControl';
 import Select from '@material-ui/core/Select';
-
-
 
 import GlobalStyle from './GlobalStyle';
 import LastTemperatures from './LastTemperatures';
 
-
-const timeFormatDef = "%Y-%m-%d %H:%M:%S"
+const timeFormatDef = '%Y-%m-%d %H:%M:%S';
 const timeFormatNew = timeFormat(timeFormatDef);
-
 
 const Page = styled.div`
   background-color: whitesmoke;
@@ -55,10 +46,6 @@ const GraphCard = styled(Card)`
   margin: 2em;
   width: 90vw;
   height: 75vh;
-
-  @media (max-width: 700px) {
-    display: none;
-  }
 `;
 
 const ReloadButtonContainer = styled.div`
@@ -76,105 +63,89 @@ const ErrorContainer = styled.div`
   justify-content: center;
 `;
 
+const handleData = (data, xMin, xMax) => {
+  let max = xMax;
+  let min = xMin;
+  const newTemperatures = [];
+  const temperature_blue = {
+    id: 'Blue',
+    data: [],
+  };
+  const temperature_green = {
+    id: 'Green',
+    data: [],
+  };
+  const temperature_yellow = {
+    id: 'Yellow',
+    data: [],
+  };
+
+  // Max number of points
+  const maxPointsNumber = 250;
+  const intervalBetweenPoints = data.length / maxPointsNumber;
+  let counter = 1;
+
+  data.forEach((d) => {
+    if (counter < intervalBetweenPoints) {
+      counter += 1;
+    } else {
+      counter = 1;
+      if (d.temperature_blue < min) min = d.temperature_blue;
+      if (d.temperature_blue > max) max = d.temperature_yellow;
+
+      temperature_blue.data.push({
+        x: d.date,
+        y: d.temperature_blue.toFixed(2),
+      });
+      temperature_green.data.push({
+        x: d.date,
+        y: d.temperature_green.toFixed(2),
+      });
+      temperature_yellow.data.push({
+        x: d.date,
+        y: d.temperature_yellow.toFixed(2),
+      });
+    }
+  });
+  newTemperatures.push(temperature_blue, temperature_green, temperature_yellow);
+
+  return { newTemperatures, max, min };
+};
+
 const App = () => {
-  const [data, setData] = useState([]);
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(false);
   const [temperatures, setTemperatures] = useState([]);
   const [xMax, setXMax] = useState(0);
   const [xMin, setXMin] = useState(100);
-  const [lastId, setLastId] = useState(0);
   const [dayRange, setDayRange] = useState(7);
-
-  useEffect(() => loadData(), []);
-  useEffect(() => {
-    loadData();
-	}, [dayRange]);
-
 
   const handleDayRangeChange = (event) => {
     setDayRange(event.target.value);
   };
 
-
-  const handleData = (data) => {
-    let max = xMax;
-    let min = xMin;
-    let last = lastId;
-    const newTemperatures = [];
-    const temperature_blue = {
-      id: 'Blue',
-      data: [],
-    };
-    const temperature_green = {
-      id: 'Green',
-      data: [],
-    };
-    const temperature_yellow = {
-      id: 'Yellow',
-      data: [],
-    };
-
-    // Max number of points
-    const maxPointsNumber = 250;
-    const intervalBetweenPoints = data.length / maxPointsNumber;
-           let counter = 1;
-
-    data.forEach((d) => {
-      if (counter < intervalBetweenPoints) {
-      	  counter += 1;
-      }
-      else{
-      	  counter = 1;
-      	  if (d.temperature_blue < min) min = d.temperature_blue;
-	      if (d.temperature_blue > max) max = d.temperature_yellow;
-	      if (last < d.id) last = d.id;
-
-	      temperature_blue.data.push({
-	        x: d.date,
-	        y: d.temperature_blue.toFixed(2),
-	      });
-	      temperature_green.data.push({
-	        x: d.date,
-	        y: d.temperature_green.toFixed(2),
-	      });
-	      temperature_yellow.data.push({
-	        x: d.date,
-	        y: d.temperature_yellow.toFixed(2),
-	      });
-      }
-      
-    });
-    newTemperatures.push(temperature_blue, temperature_green, temperature_yellow);
-    return { newTemperatures, max, min, last };
-  };
-
-  const loadData = () => {
-
+  const loadData = useCallback(() => {
     setLoading(true);
     setError(false);
     let today = new Date(Date.now());
     let firstDate = new Date();
 
-    let url = "https://cors-anywhere.herokuapp.com/http://35.180.229.230:6789/temperatures/select/v2.0";
+    let url = 'http://35.180.229.230:6789/temperatures/select/v2.0';
 
     if (dayRange > 0) {
       firstDate.setDate(today.getDate() - dayRange);
       let firstDateString = timeFormatNew(firstDate);
       let todayString = timeFormatNew(today);
-      url = url + "?start=" + firstDateString + "&end=" + todayString;
+      url = url + '?start=' + firstDateString + '&end=' + todayString;
     }
-    
 
     axios
       .get(url)
       .then((res) => {
-        const { newTemperatures, max, min, last } = handleData(res.data);
-        setData(res.data);
+        const { newTemperatures, max, min } = handleData(res.data, xMin, xMax);
         setTemperatures(newTemperatures);
         setXMax(max);
         setXMin(min);
-        setLastId(last);
         setLoading(false);
       })
       .catch((e) => {
@@ -182,32 +153,21 @@ const App = () => {
         setLoading(false);
         setError(true);
       });
-  };
+  }, [dayRange, xMax, xMin]);
 
-
-  const renderAxisBottom = (data) => {
-    const axisBottom = [];
-    const daysData = data[0].data;
-    // only keep 31 ticks in the bottom axis
-    daysData.forEach((val, index) => {
-      if (index % Math.ceil(daysData.length / 32) === 0) axisBottom.push(val.x);
-    });
-    return axisBottom;
-  };
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   return (
     <Page>
       <GlobalStyle />
       <Container>
-          <AppBar color="primary" position="relative">
+        <AppBar color="primary" position="relative">
           <Title>Cluny Street Brewery</Title>
         </AppBar>
-        {data.length > 0 && <LastTemperatures lastTemp={data.find((d) => d.id === lastId)} />}
 
-        <Select
-          value={dayRange}
-          onChange={handleDayRangeChange}
-        >
+        <Select style={{ marginTop: '2em' }} value={dayRange} onChange={handleDayRangeChange}>
           <MenuItem value={1}>One day</MenuItem>
           <MenuItem value={7}>One week</MenuItem>
           <MenuItem value={30}>One month</MenuItem>
@@ -215,6 +175,7 @@ const App = () => {
           <MenuItem value={0}>All time</MenuItem>
         </Select>
 
+        {temperatures.length > 0 && <LastTemperatures temperatures={temperatures} />}
         <GraphCard>
           {temperatures.length > 0 && (
             <ResponsiveLine
@@ -243,15 +204,15 @@ const App = () => {
                 max: xMax + 2,
               }}
               xScale={{
-        				type: 'time',
-        				format: timeFormatDef,
-        				precision: 'second',
-        			  }}
+                type: 'time',
+                format: timeFormatDef,
+                precision: 'second',
+              }}
               axisBottom={{
-	            format: "%d/%m %H:%m",
-	            tickRotation: -45,
-	            tickValues: 20,
-	          }}
+                format: '%d/%m %H:%m',
+                tickRotation: -45,
+                tickValues: 20,
+              }}
               data={temperatures}
             />
           )}
