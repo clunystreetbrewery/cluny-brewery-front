@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import axios from 'axios';
 
@@ -63,6 +63,67 @@ const ErrorContainer = styled.div`
   justify-content: center;
 `;
 
+const GraphCardContent = ({ temperatures, loading, error, xMin, xMax }) => {
+  if (error) {
+    return (
+      <ErrorContainer>
+        <ErrorOutlined style={{ fontSize: '3em' }} />
+        <p>An error as occurred</p>
+      </ErrorContainer>
+    );
+  }
+
+  if (loading) {
+    return <CircularProgress size={100} />;
+  }
+
+  if (temperatures.length > 0) {
+    return (
+      <ResponsiveLine
+        curve="natural"
+        minY="auto"
+        colors={['royalblue', 'forestgreen', 'gold']}
+        margin={{
+          top: 20,
+          right: 50,
+          bottom: 100,
+          left: 80,
+        }}
+        axisLeft={{
+          orient: 'left',
+          tickSize: 10,
+          tickPadding: 5,
+          tickRotation: 0,
+          legend: 'temperatures',
+          legendOffset: -50,
+          legendPosition: 'middle',
+        }}
+        yScale={{
+          type: 'linear',
+          stacked: false,
+          min: xMin - 2,
+          max: xMax + 2,
+        }}
+        xScale={{
+          type: 'time',
+          format: timeFormatDef,
+          precision: 'second',
+        }}
+        axisBottom={{
+          format: '%d/%m %H:%m',
+          tickRotation: -45,
+          tickValues: 20,
+        }}
+        data={temperatures}
+      />
+    );
+  }
+
+  return null;
+};
+
+const useMountEffect = (effectFn) => useEffect(effectFn, []);
+
 const handleData = (data, xMin, xMax) => {
   let max = xMax;
   let min = xMin;
@@ -120,21 +181,18 @@ const App = () => {
   const [xMin, setXMin] = useState(100);
   const [dayRange, setDayRange] = useState(7);
 
-  const handleDayRangeChange = (event) => {
-    setDayRange(event.target.value);
-  };
-
-  const loadData = useCallback(() => {
+  const loadData = (range) => {
     setLoading(true);
     setError(false);
     let today = new Date(Date.now());
     let firstDate = new Date();
 
+    // TODO: delete this useless cors-anywhere once API is secure with https.
     let url =
       'https://cors-anywhere.herokuapp.com/http://35.180.229.230:6789/temperatures/select/v2.0';
 
-    if (dayRange > 0) {
-      firstDate.setDate(today.getDate() - dayRange);
+    if (range > 0) {
+      firstDate.setDate(today.getDate() - range);
       let firstDateString = timeFormatNew(firstDate);
       let todayString = timeFormatNew(today);
       url = url + '?start=' + firstDateString + '&end=' + todayString;
@@ -154,11 +212,17 @@ const App = () => {
         setLoading(false);
         setError(true);
       });
-  }, [dayRange, xMax, xMin]);
+  };
 
-  useEffect(() => {
-    loadData();
-  }, [loadData]);
+  useMountEffect(() => {
+    loadData(dayRange);
+  });
+
+  const handleDayRangeChange = (event) => {
+    const range = event.target.value;
+    setDayRange(range);
+    loadData(range);
+  };
 
   return (
     <Page>
@@ -178,56 +242,17 @@ const App = () => {
 
         {temperatures.length > 0 && <LastTemperatures temperatures={temperatures} />}
         <GraphCard>
-          {temperatures.length > 0 && (
-            <ResponsiveLine
-              curve="natural"
-              minY="auto"
-              colors={['royalblue', 'forestgreen', 'gold']}
-              margin={{
-                top: 20,
-                right: 50,
-                bottom: 100,
-                left: 80,
-              }}
-              axisLeft={{
-                orient: 'left',
-                tickSize: 10,
-                tickPadding: 5,
-                tickRotation: 0,
-                legend: 'temperatures',
-                legendOffset: -50,
-                legendPosition: 'middle',
-              }}
-              yScale={{
-                type: 'linear',
-                stacked: false,
-                min: xMin - 2,
-                max: xMax + 2,
-              }}
-              xScale={{
-                type: 'time',
-                format: timeFormatDef,
-                precision: 'second',
-              }}
-              axisBottom={{
-                format: '%d/%m %H:%m',
-                tickRotation: -45,
-                tickValues: 20,
-              }}
-              data={temperatures}
-            />
-          )}
-          {loading && <CircularProgress size={100} />}
-          {error && (
-            <ErrorContainer>
-              <ErrorOutlined style={{ fontSize: '3em' }} />
-              <p>An error as occurred</p>
-            </ErrorContainer>
-          )}
+          <GraphCardContent
+            error={error}
+            loading={loading}
+            temperatures={temperatures}
+            xMin={xMin}
+            xMax={xMax}
+          />
         </GraphCard>
         <ReloadButtonContainer>
-          <Fab color="secondary" aria-label="Reload" onClick={loadData}>
-            {loading ? <CircularProgress color="primary" size={25} /> : <CachedIcon />}
+          <Fab color="secondary" aria-label="Reload" onClick={() => loadData(dayRange)}>
+            {loading ? <CircularProgress color="white" size={25} /> : <CachedIcon />}
           </Fab>
         </ReloadButtonContainer>
       </Container>
