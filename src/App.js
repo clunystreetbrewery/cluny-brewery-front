@@ -19,6 +19,7 @@ import LastTemperatures from './LastTemperatures';
 
 const timeFormatDef = '%Y-%m-%d %H:%M:%S';
 const timeFormatNew = timeFormat(timeFormatDef);
+const apiUrl = "https://api.clunystreetbreweringcompany.com"
 
 const Page = styled.div`
   background-color: whitesmoke;
@@ -187,9 +188,8 @@ const App = () => {
     let today = new Date(Date.now());
     let firstDate = new Date();
 
-    // TODO: delete this useless cors-anywhere once API is secure with https.
     let url =
-      'https://cors-anywhere.herokuapp.com/http://35.180.229.230:6789/temperatures/select/v2.0';
+      apiUrl + '/temperatures/select/v2.0';
 
     if (range > 0) {
       firstDate.setDate(today.getDate() - range);
