@@ -152,8 +152,8 @@ const handleData = (data, xMin, xMax) => {
       counter += 1;
     } else {
       counter = 1;
-      if (d.temperature_blue < min) min = d.temperature_blue;
-      if (d.temperature_blue > max) max = d.temperature_yellow;
+      min = Math.min(min, d.temperature_blue, d.temperature_green, d.temperature_yellow)
+      max = Math.max(max, d.temperature_blue, d.temperature_green, d.temperature_yellow)
 
       temperature_blue.data.push({
         x: d.date,
@@ -170,7 +170,7 @@ const handleData = (data, xMin, xMax) => {
     }
   });
   newTemperatures.push(temperature_blue, temperature_green, temperature_yellow);
-
+  
   return { newTemperatures, max, min };
 };
 
