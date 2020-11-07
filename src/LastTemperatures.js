@@ -1,7 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 
-import Card from '@material-ui/core/Card';
+import { Card } from '@material-ui/core';
 
 const LastTemperaturesContainer = styled(Card)`
   margin: 2em 1em 0 1em;
