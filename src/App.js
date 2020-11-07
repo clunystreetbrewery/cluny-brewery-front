@@ -1,12 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import axios from 'axios';
-
 import { timeFormat } from 'd3-time-format';
 import { ResponsiveLine } from '@nivo/line';
-
 import CachedIcon from '@material-ui/icons/Cached';
-import AppBar from '@material-ui/core/AppBar';
 import ErrorOutlined from '@material-ui/icons/ErrorOutlined';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import Card from '@material-ui/core/Card';
@@ -14,12 +11,13 @@ import Fab from '@material-ui/core/Fab';
 import MenuItem from '@material-ui/core/MenuItem';
 import Select from '@material-ui/core/Select';
 
+import Header from './Header';
 import GlobalStyle from './GlobalStyle';
 import LastTemperatures from './LastTemperatures';
 
 const timeFormatDef = '%Y-%m-%d %H:%M:%S';
 const timeFormatNew = timeFormat(timeFormatDef);
-const apiUrl = "https://api.clunystreetbreweringcompany.com"
+export const apiUrl = 'https://api.clunystreetbreweringcompany.com';
 
 const Page = styled.div`
   background-color: whitesmoke;
@@ -32,12 +30,6 @@ const Container = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-`;
-
-const Title = styled.div`
-  font-size: 5vh;
-  font-weight: bold;
-  margin: 3vh;
 `;
 
 const GraphCard = styled(Card)`
@@ -54,6 +46,7 @@ const ReloadButtonContainer = styled.div`
   bottom: 0;
   right: 0;
   margin: 3vh;
+  color: whitesmoke;
 `;
 
 const ErrorContainer = styled.div`
@@ -125,9 +118,9 @@ const GraphCardContent = ({ temperatures, loading, error, xMin, xMax }) => {
 
 const useMountEffect = (effectFn) => useEffect(effectFn, []);
 
-const handleData = (data, xMin, xMax) => {
-  let max = xMax;
-  let min = xMin;
+const handleData = (data) => {
+  let max = 0;
+  let min = 100;
   const newTemperatures = [];
   const temperature_blue = {
     id: 'Blue',
@@ -152,8 +145,8 @@ const handleData = (data, xMin, xMax) => {
       counter += 1;
     } else {
       counter = 1;
-      min = Math.min(min, d.temperature_blue, d.temperature_green, d.temperature_yellow)
-      max = Math.max(max, d.temperature_blue, d.temperature_green, d.temperature_yellow)
+      min = Math.min(min, d.temperature_blue, d.temperature_green, d.temperature_yellow);
+      max = Math.max(max, d.temperature_blue, d.temperature_green, d.temperature_yellow);
 
       temperature_blue.data.push({
         x: d.date,
@@ -170,7 +163,7 @@ const handleData = (data, xMin, xMax) => {
     }
   });
   newTemperatures.push(temperature_blue, temperature_green, temperature_yellow);
-  
+
   return { newTemperatures, max, min };
 };
 
@@ -188,8 +181,7 @@ const App = () => {
     let today = new Date(Date.now());
     let firstDate = new Date();
 
-    let url =
-      apiUrl + '/temperatures/select/v2.0';
+    let url = apiUrl + '/temperatures/select/v2.0';
 
     if (range > 0) {
       firstDate.setDate(today.getDate() - range);
@@ -201,7 +193,7 @@ const App = () => {
     axios
       .get(url)
       .then((res) => {
-        const { newTemperatures, max, min } = handleData(res.data, xMin, xMax);
+        const { newTemperatures, max, min } = handleData(res.data);
         setTemperatures(newTemperatures);
         setXMax(max);
         setXMin(min);
@@ -228,10 +220,7 @@ const App = () => {
     <Page>
       <GlobalStyle />
       <Container>
-        <AppBar color="primary" position="relative">
-          <Title>Cluny Street Brewery</Title>
-        </AppBar>
-
+        <Header />
         <Select style={{ marginTop: '2em' }} value={dayRange} onChange={handleDayRangeChange}>
           <MenuItem value={1}>One day</MenuItem>
           <MenuItem value={7}>One week</MenuItem>
@@ -252,7 +241,7 @@ const App = () => {
         </GraphCard>
         <ReloadButtonContainer>
           <Fab color="secondary" aria-label="Reload" onClick={() => loadData(dayRange)}>
-            {loading ? <CircularProgress color="white" size={25} /> : <CachedIcon />}
+            {loading ? <CircularProgress size={25} /> : <CachedIcon />}
           </Fab>
         </ReloadButtonContainer>
       </Container>
