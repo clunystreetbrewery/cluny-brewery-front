@@ -1,30 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import styled from 'styled-components';
-import AppBar from '@material-ui/core/AppBar';
-import Modal from '@material-ui/core/Modal';
 import Button from '@material-ui/core/Button';
 import Card from '@material-ui/core/Card';
-import TextField from '@material-ui/core/TextField';
-import Chip from '@material-ui/core/Chip';
-import ThumbUp from '@material-ui/icons/ThumbUp';
-import CloseIcon from '@material-ui/icons/Close';
 
 import { apiUrl } from './App';
 
-const Title = styled.div`
-  font-size: 2rem;
-  font-weight: bold;
-  margin: 2rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-
-  @media (max-width: 768px) {
-    font-size: 1.5rem;
-    margin: 1rem;
-  }
-`;
 
 const ModalContainer = styled(Card)`
   //margin: 10rem auto;
@@ -45,16 +26,6 @@ const ModalContainer = styled(Card)`
     max-height: none;
     max-width: none;
     box-sizing: border-box;
-  }
-`;
-
-const CloseContainer = styled.div`
-  display: none;
-  width: 100%;
-  text-align: right;
-  margin-bottom: 1rem;
-  @media (max-width: 768px) {
-    display: block;
   }
 `;
 
@@ -91,7 +62,6 @@ const TemperaturePickerWidget = ({target_temperature}) => {
   }
 
   const onSubmit = async (e) => {
-   console.log(e);
    let config = {};
    config = {
      headers: { Authorization: `Bearer ${token}`}
@@ -103,7 +73,6 @@ const TemperaturePickerWidget = ({target_temperature}) => {
     e.preventDefault();
     try {
       setError(false);
-
       const res = await axios.post(apiUrl + '/set_fridge_temperature', data, config);
       setTargetTemperature(res.data.new_target_temperature);
 

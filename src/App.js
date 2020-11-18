@@ -190,7 +190,6 @@ const App = () => {
 
     config = {
      headers: { Authorization: `Bearer ${token}` },
-     //headers: { Authorization: `Bearer 222eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MDU3OTM1NzksImlhdCI6MTYwNTcwNzE3OSwic3ViIjoyfQ.Yzs7rSr9UNMT-eZcfF-ZzbbqilUHW3GBOJHjfYNjp3c` },
     };
 
     axios
@@ -199,6 +198,9 @@ const App = () => {
        setTargetTemperature(res.data.target_temperature);
        if(res.data.authentification) {
           setIsLoggedIn(true);
+       }
+       else{
+        localStorage.removeItem('token');
        }
      })
      .catch((e) => {
@@ -256,7 +258,7 @@ const App = () => {
     <Page>
       <GlobalStyle />
       <Container>
-        <Header />
+        <Header/>
         {temperatures.length > 0 && <LastTemperatures temperatures={temperatures} />}
         {isLoggedIn && <TemperaturePickerWidget target_temperature={targetTemperature}/>}
         <Select style={{ marginTop: '2em' }} value={dayRange} onChange={handleDayRangeChange}>
