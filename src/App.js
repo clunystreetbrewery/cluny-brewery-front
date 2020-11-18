@@ -186,20 +186,20 @@ const App = () => {
 
   const loadGlobalState = () => {
     let token = localStorage.getItem('token') || null;
-    if(token){
-      setIsLoggedIn(true);
-    }
     let config = {};
 
     config = {
      headers: { Authorization: `Bearer ${token}` },
+     //headers: { Authorization: `Bearer 222eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MDU3OTM1NzksImlhdCI6MTYwNTcwNzE3OSwic3ViIjoyfQ.Yzs7rSr9UNMT-eZcfF-ZzbbqilUHW3GBOJHjfYNjp3c` },
     };
 
     axios
      .get(apiUrl + '/check_global_state', config)
      .then((res) => {
-       console.log(res);
        setTargetTemperature(res.data.target_temperature);
+       if(res.data.authentification) {
+          setIsLoggedIn(true);
+       }
      })
      .catch((e) => {
        console.error(e);
@@ -242,8 +242,8 @@ const App = () => {
   };
 
   useMountEffect(() => {
-    loadData(dayRange);
     loadGlobalState();
+    loadData(dayRange);
   });
 
   const handleDayRangeChange = (event) => {
