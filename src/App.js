@@ -11,9 +11,13 @@ import Fab from '@material-ui/core/Fab';
 import MenuItem from '@material-ui/core/MenuItem';
 import Select from '@material-ui/core/Select';
 
+
 import Header from './Header';
 import GlobalStyle from './GlobalStyle';
 import LastTemperatures from './LastTemperatures';
+import TemperaturePickerWidget from './TemperaturePickerWidget';
+
+
 
 const timeFormatDef = '%Y-%m-%d %H:%M:%S';
 const timeFormatNew = timeFormat(timeFormatDef);
@@ -116,6 +120,8 @@ const GraphCardContent = ({ temperatures, loading, error, xMin, xMax }) => {
   return null;
 };
 
+
+
 const useMountEffect = (effectFn) => useEffect(effectFn, []);
 
 const handleData = (data) => {
@@ -174,10 +180,34 @@ const App = () => {
   const [xMax, setXMax] = useState(0);
   const [xMin, setXMin] = useState(100);
   const [dayRange, setDayRange] = useState(7);
+  const [targetTemperature, setTargetTemperature] = useState(0);
+
+  const loadGlobalState = () => {
+    let token = localStorage.getItem('token') || null;
+    let config = {};
+
+    config = {
+     headers: { Authorization: `Bearer ${token}` },
+    };
+
+    axios
+     .get(apiUrl + '/check_global_state', config)
+     .then((res) => {
+       console.log(res);
+       setTargetTemperature(res.data.target_temperature);
+     })
+     .catch((e) => {
+       console.error(e);
+       setLoading(false);
+       setError(true);
+     });
+  };
+
 
   const loadData = (range) => {
     setLoading(true);
     setError(false);
+
     let today = new Date(Date.now());
     let firstDate = new Date();
 
@@ -208,6 +238,7 @@ const App = () => {
 
   useMountEffect(() => {
     loadData(dayRange);
+    loadGlobalState();
   });
 
   const handleDayRangeChange = (event) => {
@@ -221,6 +252,8 @@ const App = () => {
       <GlobalStyle />
       <Container>
         <Header />
+        {temperatures.length > 0 && <LastTemperatures temperatures={temperatures} />}
+        <TemperaturePickerWidget target_temperature={targetTemperature}/>
         <Select style={{ marginTop: '2em' }} value={dayRange} onChange={handleDayRangeChange}>
           <MenuItem value={1}>One day</MenuItem>
           <MenuItem value={7}>One week</MenuItem>
@@ -228,8 +261,6 @@ const App = () => {
           <MenuItem value={365}>One year</MenuItem>
           <MenuItem value={0}>All time</MenuItem>
         </Select>
-
-        {temperatures.length > 0 && <LastTemperatures temperatures={temperatures} />}
         <GraphCard>
           <GraphCardContent
             error={error}
