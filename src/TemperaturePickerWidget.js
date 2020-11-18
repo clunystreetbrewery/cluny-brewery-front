@@ -27,13 +27,16 @@ const Title = styled.div`
 `;
 
 const ModalContainer = styled(Card)`
-  margin: 10rem auto;
-  width: 50%;
+  //margin: 10rem auto;
+  width: 100%;
   height: 50%;
-  max-width: 25rem;
-  max-height: 35rem;
+  //max-width: 25rem;
+  //max-height: 35rem;
   outline: 0;
   padding: 2rem;
+  display: inline-block;
+  border: solid red 2px;
+  border-radius: 0.5em;
 
   @media (max-width: 768px) {
     margin: 0;
@@ -58,9 +61,6 @@ const CloseContainer = styled.div`
 
 const FormContainer = styled.form`
   width: 100%;
-  display: inline-block;
-  border: solid red 1px;
-  border-radius: 0.5em;
   padding: 1em;
   justify-content: space-between;
   margin: auto;
@@ -118,6 +118,7 @@ const TemperaturePickerWidget = ({target_temperature}) => {
   
   return (
     <div id="wrapper">
+    <ModalContainer>
     <FormContainer onSubmit={onSubmit}>
      <span> Target Temperature: {targetTemperature}°C  </span>
      <input name="numberOfGuests" type="number" onChange={onChangeTargetTemperature} defaultValue={target_temperature || ''}/>
@@ -126,6 +127,7 @@ const TemperaturePickerWidget = ({target_temperature}) => {
       </Button>
       {error && <ErrorText>{error}</ErrorText>}
      </FormContainer>
+     </ModalContainer>
      </div>
   );
 };
