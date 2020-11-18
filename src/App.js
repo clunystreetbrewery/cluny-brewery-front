@@ -181,9 +181,14 @@ const App = () => {
   const [xMin, setXMin] = useState(100);
   const [dayRange, setDayRange] = useState(7);
   const [targetTemperature, setTargetTemperature] = useState(0);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
 
   const loadGlobalState = () => {
     let token = localStorage.getItem('token') || null;
+    if(token){
+      setIsLoggedIn(true);
+    }
     let config = {};
 
     config = {
@@ -253,7 +258,7 @@ const App = () => {
       <Container>
         <Header />
         {temperatures.length > 0 && <LastTemperatures temperatures={temperatures} />}
-        <TemperaturePickerWidget target_temperature={targetTemperature}/>
+        {isLoggedIn && <TemperaturePickerWidget target_temperature={targetTemperature}/>}
         <Select style={{ marginTop: '2em' }} value={dayRange} onChange={handleDayRangeChange}>
           <MenuItem value={1}>One day</MenuItem>
           <MenuItem value={7}>One week</MenuItem>
