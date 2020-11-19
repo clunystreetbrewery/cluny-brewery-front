@@ -54,13 +54,12 @@ const TemperaturePickerWidget = ({targetTemperature, setTargetTemperature}) => {
   }
 
   const onSubmit = async (e) => {
-   let config = {};
-   config = {
+    
+   let config = {
      headers: { Authorization: `Bearer ${token}`}
    };
 
-   let data = {};
-   data = {value: inputTargetTemperature};
+   let data = {value: inputTargetTemperature};
 
     e.preventDefault();
     try {
