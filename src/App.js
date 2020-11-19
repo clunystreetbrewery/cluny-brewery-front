@@ -259,8 +259,8 @@ const App = () => {
       <GlobalStyle />
       <Container>
         <Header setIsLoggedIn={setIsLoggedIn}/>
-        {temperatures.length > 0 && <LastTemperatures temperatures={temperatures} />}
         {isLoggedIn && <TemperaturePickerWidget targetTemperature={targetTemperature} setTargetTemperature={setTargetTemperature}/>}
+        {temperatures.length > 0 && <LastTemperatures temperatures={temperatures} />}
         <Select style={{ marginTop: '2em' }} value={dayRange} onChange={handleDayRangeChange}>
           <MenuItem value={1}>One day</MenuItem>
           <MenuItem value={7}>One week</MenuItem>

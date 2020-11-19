@@ -9,25 +9,12 @@ import { apiUrl } from './App';
 
 
 const ModalContainer = styled(Card)`
-  //margin: 10rem auto;
-  width: 100%;
-  height: 50%;
-  //max-width: 25rem;
-  //max-height: 35rem;
-  outline: 0;
-  padding: 2rem;
-  display: inline-block;
-  border: solid red 2px;
-  border-radius: 0.5em;
-
-  @media (max-width: 768px) {
-    margin: 0;
-    height: 100%;
-    width: 100%;
-    max-height: none;
-    max-width: none;
-    box-sizing: border-box;
-  }
+  margin: 1em 1em 1em 1em;
+  padding: 1em;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 `;
 
 
@@ -81,10 +68,9 @@ const TemperaturePickerWidget = ({targetTemperature, setTargetTemperature}) => {
   };
   
   return (
-    <div id="wrapper">
     <ModalContainer>
+    <p>Target Temperature: {targetTemperature}°C</p>
     <FormContainer onSubmit={onSubmit}>
-     <p>Target Temperature: {targetTemperature}°C</p>
      <Input type="number" onChange={onChangeTargetTemperature} value={inputTargetTemperature}/>
      <Button type="submit" variant="contained" color="primary">
         Enter new target
@@ -92,7 +78,6 @@ const TemperaturePickerWidget = ({targetTemperature, setTargetTemperature}) => {
       {error && <ErrorText>{error}</ErrorText>}
      </FormContainer>
      </ModalContainer>
-     </div>
   );
 };
 
