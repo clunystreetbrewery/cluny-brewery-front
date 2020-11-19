@@ -3,6 +3,7 @@ import axios from 'axios';
 import styled from 'styled-components';
 import Button from '@material-ui/core/Button';
 import Card from '@material-ui/core/Card';
+import Input from '@material-ui/core/Input';
 
 import { apiUrl } from './App';
 
@@ -43,19 +44,13 @@ const ErrorText = styled.p`
 `;
 
 
-const TemperaturePickerWidget = ({target_temperature}) => {
+const TemperaturePickerWidget = ({targetTemperature, setTargetTemperature}) => {
 
 
-  const [inputTargetTemperature, setInputTargetTemperature] = useState(999);
-  const [targetTemperature, setTargetTemperature] = useState(999);
-
+  const [inputTargetTemperature, setInputTargetTemperature] = useState(targetTemperature);
   const [error, setError] = useState(false);
   const token = localStorage.getItem('token');
 
-  useEffect(() => {
-    setTargetTemperature(target_temperature);
-    setInputTargetTemperature(target_temperature);
-  }, [target_temperature] );
 
   const onChangeTargetTemperature = (e) => {
     setInputTargetTemperature(e.target.value);
@@ -89,8 +84,8 @@ const TemperaturePickerWidget = ({target_temperature}) => {
     <div id="wrapper">
     <ModalContainer>
     <FormContainer onSubmit={onSubmit}>
-     <span> Target Temperature: {targetTemperature}°C  </span>
-     <input name="numberOfGuests" type="number" onChange={onChangeTargetTemperature} defaultValue={target_temperature || ''}/>
+     <p>Target Temperature: {targetTemperature}°C</p>
+     <Input type="number" onChange={onChangeTargetTemperature} value={inputTargetTemperature}/>
      <Button type="submit" variant="contained" color="primary">
         Enter new target
       </Button>
