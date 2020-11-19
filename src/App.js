@@ -186,9 +186,8 @@ const App = () => {
 
   const loadGlobalState = () => {
     let token = localStorage.getItem('token') || null;
-    let config = {};
 
-    config = {
+    let config = {
      headers: { Authorization: `Bearer ${token}` },
     };
 
