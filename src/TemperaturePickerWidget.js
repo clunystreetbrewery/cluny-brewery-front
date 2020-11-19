@@ -17,6 +17,16 @@ const ModalContainer = styled(Card)`
   justify-content: center;
 `;
 
+const TargetTemperatureTitle = styled.p`
+  text-align: center;
+  font-size: 1.5em;
+  margin: 0;
+
+  @media (max-width: 700px) {
+    font-size: 1em;
+  }
+`;
+
 
 const FormContainer = styled.form`
   width: 100%;
@@ -69,7 +79,7 @@ const TemperaturePickerWidget = ({targetTemperature, setTargetTemperature}) => {
   
   return (
     <ModalContainer>
-    <p>Target Temperature: {targetTemperature}°C</p>
+    <TargetTemperatureTitle>Target Temperature: {targetTemperature}°C</TargetTemperatureTitle>
     <FormContainer onSubmit={onSubmit}>
      <Input type="number" onChange={onChangeTargetTemperature} value={inputTargetTemperature}/>
      <Button type="submit" variant="contained" color="primary">
