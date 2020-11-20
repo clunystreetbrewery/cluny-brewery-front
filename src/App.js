@@ -110,6 +110,7 @@ const GraphCardContent = ({ temperatures, loading, error, xMin, xMax }) => {
           tickRotation: -45,
           tickValues: 20,
         }}
+        curve='monotoneX'
         data={temperatures}
       />
     );
