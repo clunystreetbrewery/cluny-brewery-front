@@ -65,7 +65,7 @@ const ErrorText = styled.p`
   color: tomato;
 `;
 
-const LoginForm = ({ closeModal }) => {
+const LoginForm = ({ closeModal, setIsLoggedIn }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState(false);
@@ -85,6 +85,8 @@ const LoginForm = ({ closeModal }) => {
 
       const token = res.data.token;
       localStorage.setItem('token', token);
+
+      setIsLoggedIn(true);
 
       closeModal();
     } catch (error) {
@@ -118,12 +120,14 @@ const LoginForm = ({ closeModal }) => {
   );
 };
 
-const Header = () => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
+const Header = ({setIsLoggedIn}) => {
 
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const toggleModal = () => setIsModalOpen(!isModalOpen);
 
   const token = localStorage.getItem('token');
+
+
 
   return (
     <>
@@ -144,7 +148,7 @@ const Header = () => {
           <CloseContainer>
             <CloseIcon onClick={toggleModal} />
           </CloseContainer>
-          <LoginForm closeModal={toggleModal} />
+          <LoginForm closeModal={toggleModal} setIsLoggedIn={setIsLoggedIn}/>
         </ModalContainer>
       </Modal>
     </>
