@@ -73,10 +73,12 @@ const GraphCardContent = ({ temperatures, loading, error, xMin, xMax }) => {
     return <CircularProgress size={100} />;
   }
 
+  console.log(temperatures);
+
   if (temperatures.length > 0) {
     return (
       <ResponsiveLine
-        curve="natural"
+        curve='monotoneX'
         minY="auto"
         colors={['royalblue', 'forestgreen', 'gold']}
         margin={{
@@ -106,11 +108,10 @@ const GraphCardContent = ({ temperatures, loading, error, xMin, xMax }) => {
           precision: 'second',
         }}
         axisBottom={{
-          format: '%d/%m %H:%m',
+          format: '%d/%m %H:%M',
           tickRotation: -45,
           tickValues: 20,
         }}
-        curve='monotoneX'
         data={temperatures}
       />
     );
