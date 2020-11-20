@@ -11,9 +11,13 @@ import Fab from '@material-ui/core/Fab';
 import MenuItem from '@material-ui/core/MenuItem';
 import Select from '@material-ui/core/Select';
 
+
 import Header from './Header';
 import GlobalStyle from './GlobalStyle';
 import LastTemperatures from './LastTemperatures';
+import TemperaturePickerWidget from './TemperaturePickerWidget';
+
+
 
 const timeFormatDef = '%Y-%m-%d %H:%M:%S';
 const timeFormatNew = timeFormat(timeFormatDef);
@@ -114,6 +118,8 @@ const GraphCardContent = ({ temperatures, loading, error, xMin, xMax }) => {
   return null;
 };
 
+
+
 const useMountEffect = (effectFn) => useEffect(effectFn, []);
 
 const handleData = (data) => {
@@ -172,10 +178,40 @@ const App = () => {
   const [xMax, setXMax] = useState(0);
   const [xMin, setXMin] = useState(100);
   const [dayRange, setDayRange] = useState(7);
+  const [targetTemperature, setTargetTemperature] = useState(0);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+
+  const loadGlobalState = () => {
+    let token = localStorage.getItem('token') || null;
+
+    let config = {
+     headers: { Authorization: `Bearer ${token}` },
+    };
+
+    axios
+     .get(apiUrl + '/check_global_state', config)
+     .then((res) => {
+       setTargetTemperature(res.data.target_temperature);
+       if(res.data.authentification) {
+          setIsLoggedIn(true);
+       }
+       else{
+        localStorage.removeItem('token');
+       }
+     })
+     .catch((e) => {
+       console.error(e);
+       setLoading(false);
+       setError(true);
+     });
+  };
+
 
   const loadData = (range) => {
     setLoading(true);
     setError(false);
+
     let today = new Date(Date.now());
     let firstDate = new Date();
 
@@ -205,6 +241,7 @@ const App = () => {
   };
 
   useMountEffect(() => {
+    loadGlobalState();
     loadData(dayRange);
   });
 
@@ -218,16 +255,16 @@ const App = () => {
     <Page>
       <GlobalStyle />
       <Container>
-        <Header />
-        <Select style={{ marginTop: '2em' }} value={dayRange} onChange={handleDayRangeChange}>
+        <Header setIsLoggedIn={setIsLoggedIn}/>
+        {isLoggedIn && <TemperaturePickerWidget targetTemperature={targetTemperature} setTargetTemperature={setTargetTemperature}/>}
+        {temperatures.length > 0 && <LastTemperatures temperatures={temperatures} />}
+        <Select style={{ marginTop: '2em'}} value={dayRange} onChange={handleDayRangeChange}>
           <MenuItem value={1}>One day</MenuItem>
           <MenuItem value={7}>One week</MenuItem>
           <MenuItem value={30}>One month</MenuItem>
           <MenuItem value={365}>One year</MenuItem>
           <MenuItem value={0}>All time</MenuItem>
         </Select>
-
-        {temperatures.length > 0 && <LastTemperatures temperatures={temperatures} />}
         <GraphCard>
           <GraphCardContent
             error={error}
