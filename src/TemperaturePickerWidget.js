@@ -54,7 +54,7 @@ const TemperaturePickerWidget = ({targetTemperature, setTargetTemperature}) => {
   }
 
   const onSubmit = async (e) => {
-    
+
    let config = {
      headers: { Authorization: `Bearer ${token}`}
    };
@@ -78,9 +78,9 @@ const TemperaturePickerWidget = ({targetTemperature, setTargetTemperature}) => {
   
   return (
     <ModalContainer>
-    <TargetTemperatureTitle>Target Temperature: {targetTemperature}°C</TargetTemperatureTitle>
+    <TargetTemperatureTitle>Target temperature: {targetTemperature}°C</TargetTemperatureTitle>
     <FormContainer onSubmit={onSubmit}>
-     <Input type="number" onChange={onChangeTargetTemperature} value={inputTargetTemperature}/>
+     <input type="number" onChange={onChangeTargetTemperature} value={inputTargetTemperature} min="4" max="30"/>
      <Button type="submit" variant="contained" color="primary">
         Enter new target
       </Button>
