@@ -73,8 +73,6 @@ const GraphCardContent = ({ temperatures, loading, error, xMin, xMax }) => {
     return <CircularProgress size={100} />;
   }
 
-  console.log(temperatures);
-
   if (temperatures.length > 0) {
     return (
       <ResponsiveLine
