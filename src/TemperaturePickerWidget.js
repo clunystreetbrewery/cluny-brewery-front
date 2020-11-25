@@ -54,10 +54,8 @@ const TemperaturePickerWidget = ({raspberryStatus, targetTemperature, setTargetT
 
 
   useEffect(() => {
-    if(raspberryStatus["is_incubator_running"]){
-      setIsIncubatorRunningSwitch(true)
-    }
-  }, [raspberryStatus]);
+    setIsIncubatorRunningSwitch(isIncubatorRunning)
+  }, [isIncubatorRunning]);
 
 
 
