@@ -4,6 +4,7 @@ import styled from 'styled-components';
 import Button from '@material-ui/core/Button';
 import Card from '@material-ui/core/Card';
 import Input from '@material-ui/core/Input';
+import Switch from '@material-ui/core/Switch';
 
 import { apiUrl } from './App';
 
@@ -41,12 +42,43 @@ const ErrorText = styled.p`
 `;
 
 
-const TemperaturePickerWidget = ({targetTemperature, setTargetTemperature}) => {
+const TemperaturePickerWidget = ({raspberryStatus, targetTemperature, setTargetTemperature}) => {
 
 
   const [inputTargetTemperature, setInputTargetTemperature] = useState(targetTemperature);
+  const [isIncubatorRunningSwitch, setIsIncubatorRunningSwitch] = useState(raspberryStatus["is_incubator_running"]);
+  const [isIncubatorRunning, setIsIncubatorRunning] = useState(raspberryStatus["is_incubator_running"]);
+
   const [error, setError] = useState(false);
   const token = localStorage.getItem('token');
+
+
+  useEffect(() => {
+    if(raspberryStatus["is_incubator_running"]){
+      setIsIncubatorRunningSwitch(true)
+    }
+  }, [raspberryStatus]);
+
+
+
+  const handleSwitchChange = (event) => {
+    setIsIncubatorRunningSwitch(event.target.checked);
+    let config = {
+     headers: { Authorization: `Bearer ${token}`}
+   };
+
+
+    axios.get(apiUrl + '/incubator' + '?switch=' + event.target.checked, config)
+        .then((res) => {
+          setIsIncubatorRunning(res.data.is_incubator_running);
+      })
+      .catch((e) => {
+        console.error(e);
+        setError(true);
+      });
+  };
+
+
 
 
   const onChangeTargetTemperature = (e) => {
@@ -55,17 +87,26 @@ const TemperaturePickerWidget = ({targetTemperature, setTargetTemperature}) => {
 
   const onSubmit = async (e) => {
 
-   let config = {
+    let config = {
      headers: { Authorization: `Bearer ${token}`}
-   };
+    };
 
-   let data = {value: inputTargetTemperature};
+    let data = {value: inputTargetTemperature};
 
     e.preventDefault();
     try {
       setError(false);
       const res = await axios.post(apiUrl + '/set_fridge_temperature', data, config);
       setTargetTemperature(res.data.new_target_temperature);
+      let raspberryStatusNew = raspberryStatus;
+      axios.get(apiUrl + '/incubator', config)
+          .then((res) => {
+            setIsIncubatorRunning(res.data.is_incubator_running);
+        })
+        .catch((e) => {
+          console.error(e);
+          setError(true);
+        });
 
       if (res.data.error) {
         throw new Error(res.data.error);
@@ -78,7 +119,16 @@ const TemperaturePickerWidget = ({targetTemperature, setTargetTemperature}) => {
   
   return (
     <ModalContainer>
-    <TargetTemperatureTitle>Target temperature: {targetTemperature}°C</TargetTemperatureTitle>
+    <p> Incubator: {isIncubatorRunning ? <span style={{color:"green"}}> Running </span> : <span style={{color:"red"}}> Not running </span>} </p>
+    <Switch
+        checked={isIncubatorRunningSwitch}
+        onChange={handleSwitchChange}
+        color="primary"
+        name="checkedB"
+        inputProps={{ 'aria-label': 'primary checkbox' }}
+      />
+
+    <p>Target temperature: {targetTemperature}°C</p>
     <FormContainer onSubmit={onSubmit}>
      <input type="number" onChange={onChangeTargetTemperature} value={inputTargetTemperature} min="4" max="30"/>
      <Button type="submit" variant="contained" color="primary">
