@@ -128,7 +128,7 @@ const TemperaturePickerWidget = ({raspberryStatus, targetTemperature, setTargetT
 
     <p>Target temperature: {targetTemperature}°C</p>
     <FormContainer onSubmit={onSubmit}>
-     <input type="number" onChange={onChangeTargetTemperature} value={inputTargetTemperature} min="4" max="30"/>
+     <input type="number" onChange={onChangeTargetTemperature} value={inputTargetTemperature} min="4" max="29"/>
      <Button type="submit" variant="contained" color="primary">
         Enter new target
       </Button>
