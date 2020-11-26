@@ -180,6 +180,7 @@ const App = () => {
   const [dayRange, setDayRange] = useState(7);
   const [targetTemperature, setTargetTemperature] = useState(0);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [raspberryStatus, setRaspberryStatus] = useState(false);
 
 
   const loadGlobalState = () => {
@@ -193,6 +194,7 @@ const App = () => {
      .get(apiUrl + '/check_global_state', config)
      .then((res) => {
        setTargetTemperature(res.data.target_temperature);
+       setRaspberryStatus(res.data.raspberry_status);
        if(res.data.authentification) {
           setIsLoggedIn(true);
        }
@@ -256,7 +258,7 @@ const App = () => {
       <GlobalStyle />
       <Container>
         <Header setIsLoggedIn={setIsLoggedIn}/>
-        {isLoggedIn && <TemperaturePickerWidget targetTemperature={targetTemperature} setTargetTemperature={setTargetTemperature}/>}
+        {isLoggedIn && <TemperaturePickerWidget targetTemperature={targetTemperature} setTargetTemperature={setTargetTemperature} raspberryStatus={raspberryStatus} setRaspberryStatus={setRaspberryStatus} />}
         {temperatures.length > 0 && <LastTemperatures temperatures={temperatures} />}
         <Select style={{ marginTop: '2em'}} value={dayRange} onChange={handleDayRangeChange}>
           <MenuItem value={1}>One day</MenuItem>

@@ -105,8 +105,11 @@ const LastTemperatures = ({ temperatures }) => {
       <LastTemperatureTitle>Last temperature records from {lastTimeFromNow}</LastTemperatureTitle>
       {temperatures.map(({ id, data }) => (
         <LastTemperature key={id}>
-          {COLOR_MAPPING[id] === 'gold' && (
-            <span style={{ marginRight: 10 }}>Outside fridge :</span>
+          {COLOR_MAPPING[id] === 'forestgreen' && (
+            <span style={{ marginRight: 10 }}>Outside :</span>
+          )}
+          {COLOR_MAPPING[id] === 'royalblue' && (
+            <span style={{ marginRight: 10 }}>Incubator :</span>
           )}
           <Color color={COLOR_MAPPING[id]} />
           <Temperature>
