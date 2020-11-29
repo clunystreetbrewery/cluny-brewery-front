@@ -117,7 +117,7 @@ const TemperaturePickerWidget = ({raspberryStatus, targetTemperature, setTargetT
   
   return (
     <ModalContainer>
-    <p> Incubator: {isIncubatorRunning ? <span style={{color:"green"}}> Running </span> : <span style={{color:"red"}}> Not running </span>} </p>
+    <p> Incubator: {isIncubatorRunning ? <span style={{color:"green"}}> On </span> : <span style={{color:"red"}}> Off </span>} </p>
     <Switch
         checked={isIncubatorRunningSwitch}
         onChange={handleSwitchChange}
