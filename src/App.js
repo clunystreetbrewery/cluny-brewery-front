@@ -6,24 +6,23 @@ import { ResponsiveLine } from '@nivo/line';
 import CachedIcon from '@material-ui/icons/Cached';
 import ErrorOutlined from '@material-ui/icons/ErrorOutlined';
 import CircularProgress from '@material-ui/core/CircularProgress';
+import NotInterestedIcon from '@material-ui/icons/NotInterested';
 import Card from '@material-ui/core/Card';
 import Fab from '@material-ui/core/Fab';
 import MenuItem from '@material-ui/core/MenuItem';
 import Select from '@material-ui/core/Select';
-
 
 import Header from './Header';
 import GlobalStyle from './GlobalStyle';
 import LastTemperatures from './LastTemperatures';
 import TemperaturePickerWidget from './TemperaturePickerWidget';
 
-
-
 const timeFormatDef = '%Y-%m-%d %H:%M:%S';
 const timeFormatNew = timeFormat(timeFormatDef);
 export const apiUrl = 'https://api.clunystreetbreweringcompany.com';
 
 const Page = styled.div`
+  min-height: 100vh;
   background-color: whitesmoke;
 `;
 
@@ -59,6 +58,10 @@ const ErrorContainer = styled.div`
   justify-content: center;
 `;
 
+const EmptyContainer = styled(ErrorContainer)`
+  margin: 3.75rem 0;
+`;
+
 const GraphCardContent = ({ temperatures, loading, error, xMin, xMax }) => {
   if (error) {
     return (
@@ -76,7 +79,7 @@ const GraphCardContent = ({ temperatures, loading, error, xMin, xMax }) => {
   if (temperatures.length > 0) {
     return (
       <ResponsiveLine
-        curve='monotoneX'
+        curve="monotoneX"
         minY="auto"
         colors={['royalblue', 'forestgreen', 'gold']}
         margin={{
@@ -117,8 +120,6 @@ const GraphCardContent = ({ temperatures, loading, error, xMin, xMax }) => {
 
   return null;
 };
-
-
 
 const useMountEffect = (effectFn) => useEffect(effectFn, []);
 
@@ -182,33 +183,30 @@ const App = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [raspberryStatus, setRaspberryStatus] = useState(false);
 
-
   const loadGlobalState = () => {
     let token = localStorage.getItem('token') || null;
 
     let config = {
-     headers: { Authorization: `Bearer ${token}` },
+      headers: { Authorization: `Bearer ${token}` },
     };
 
     axios
-     .get(apiUrl + '/check_global_state', config)
-     .then((res) => {
-       setTargetTemperature(res.data.target_temperature);
-       setRaspberryStatus(res.data.raspberry_status);
-       if(res.data.authentification) {
+      .get(apiUrl + '/check_global_state', config)
+      .then((res) => {
+        setTargetTemperature(res.data.target_temperature);
+        setRaspberryStatus(res.data.raspberry_status);
+        if (res.data.authentification) {
           setIsLoggedIn(true);
-       }
-       else{
-        localStorage.removeItem('token');
-       }
-     })
-     .catch((e) => {
-       console.error(e);
-       setLoading(false);
-       setError(true);
-     });
+        } else {
+          localStorage.removeItem('token');
+        }
+      })
+      .catch((e) => {
+        console.error(e);
+        setLoading(false);
+        setError(true);
+      });
   };
-
 
   const loadData = (range) => {
     setLoading(true);
@@ -244,8 +242,11 @@ const App = () => {
 
   useMountEffect(() => {
     loadGlobalState();
-    loadData(dayRange);
   });
+
+  useEffect(() => {
+    loadData(dayRange);
+  }, [isLoggedIn, dayRange]);
 
   const handleDayRangeChange = (event) => {
     const range = event.target.value;
@@ -253,29 +254,46 @@ const App = () => {
     loadData(range);
   };
 
+  const hasData = temperatures.some((t) => t.data && t.data.length > 0);
+
   return (
     <Page>
       <GlobalStyle />
       <Container>
-        <Header setIsLoggedIn={setIsLoggedIn}/>
-        {isLoggedIn && <TemperaturePickerWidget targetTemperature={targetTemperature} setTargetTemperature={setTargetTemperature} raspberryStatus={raspberryStatus} setRaspberryStatus={setRaspberryStatus} />}
-        {temperatures.length > 0 && <LastTemperatures temperatures={temperatures} />}
-        <Select style={{ marginTop: '2em'}} value={dayRange} onChange={handleDayRangeChange}>
+        <Header setIsLoggedIn={setIsLoggedIn} />
+        {isLoggedIn && (
+          <TemperaturePickerWidget
+            targetTemperature={targetTemperature}
+            setTargetTemperature={setTargetTemperature}
+            raspberryStatus={raspberryStatus}
+            setRaspberryStatus={setRaspberryStatus}
+          />
+        )}
+        <Select style={{ marginTop: '2em' }} value={dayRange} onChange={handleDayRangeChange}>
           <MenuItem value={1}>One day</MenuItem>
           <MenuItem value={7}>One week</MenuItem>
           <MenuItem value={30}>One month</MenuItem>
           <MenuItem value={365}>One year</MenuItem>
           <MenuItem value={0}>All time</MenuItem>
         </Select>
-        <GraphCard>
-          <GraphCardContent
-            error={error}
-            loading={loading}
-            temperatures={temperatures}
-            xMin={xMin}
-            xMax={xMax}
-          />
-        </GraphCard>
+        {hasData ? (
+          <>
+            <LastTemperatures temperatures={temperatures} />
+            <GraphCard>
+              <GraphCardContent
+                error={error}
+                loading={loading}
+                temperatures={temperatures}
+                xMin={xMin}
+                xMax={xMax}
+              />
+            </GraphCard>
+          </>
+        ) : (
+          <EmptyContainer>
+            <NotInterestedIcon color="secondary" fontSize="large" />
+          </EmptyContainer>
+        )}
         <ReloadButtonContainer>
           <Fab color="secondary" aria-label="Reload" onClick={() => loadData(dayRange)}>
             {loading ? <CircularProgress size={25} /> : <CachedIcon />}
