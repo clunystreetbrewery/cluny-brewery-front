@@ -271,7 +271,7 @@ const App = () => {
         {!raspberryStatus && (
           <ErrorContainer style={{ marginTop: '2rem' }}>
             <ThumbDownIcon />
-            raspberry is down ...
+            raspberry is unreachable ...
           </ErrorContainer>
         )}
         {isLoggedIn && (
