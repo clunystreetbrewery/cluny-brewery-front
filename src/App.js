@@ -7,6 +7,7 @@ import CachedIcon from '@material-ui/icons/Cached';
 import ErrorOutlined from '@material-ui/icons/ErrorOutlined';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import NotInterestedIcon from '@material-ui/icons/NotInterested';
+import ThumbDownIcon from '@material-ui/icons/ThumbDown';
 import Card from '@material-ui/core/Card';
 import Fab from '@material-ui/core/Fab';
 import MenuItem from '@material-ui/core/MenuItem';
@@ -121,8 +122,6 @@ const GraphCardContent = ({ temperatures, loading, error, xMin, xMax }) => {
   return null;
 };
 
-const useMountEffect = (effectFn) => useEffect(effectFn, []);
-
 const handleData = (data) => {
   let max = 0;
   let min = 100;
@@ -181,7 +180,8 @@ const App = () => {
   const [dayRange, setDayRange] = useState(7);
   const [targetTemperature, setTargetTemperature] = useState(0);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [raspberryStatus, setRaspberryStatus] = useState(false);
+  const [raspberryStatus, setRaspberryStatus] = useState(true);
+  const [isIncubatorRunning, setIsIncubatorRunning] = useState(false);
 
   const loadGlobalState = () => {
     let token = localStorage.getItem('token') || null;
@@ -194,7 +194,14 @@ const App = () => {
       .get(apiUrl + '/check_global_state', config)
       .then((res) => {
         setTargetTemperature(res.data.target_temperature);
-        setRaspberryStatus(res.data.raspberry_status);
+
+        const { error, is_incubator_running } = res.data.raspberry_status;
+        setIsIncubatorRunning(is_incubator_running);
+        if (Boolean(error)) {
+          console.warn(error);
+          setRaspberryStatus(false);
+        }
+
         if (res.data.authentification) {
           setIsLoggedIn(true);
         } else {
@@ -240,13 +247,13 @@ const App = () => {
       });
   };
 
-  useMountEffect(() => {
+  useEffect(() => {
     loadGlobalState();
-  });
+  }, [isLoggedIn]);
 
   useEffect(() => {
     loadData(dayRange);
-  }, [isLoggedIn, dayRange]);
+  }, [dayRange]);
 
   const handleDayRangeChange = (event) => {
     const range = event.target.value;
@@ -261,15 +268,21 @@ const App = () => {
       <GlobalStyle />
       <Container>
         <Header setIsLoggedIn={setIsLoggedIn} />
+        {!raspberryStatus && (
+          <ErrorContainer style={{ marginTop: '2rem' }}>
+            <ThumbDownIcon />
+            raspberry is down ...
+          </ErrorContainer>
+        )}
         {isLoggedIn && (
           <TemperaturePickerWidget
             targetTemperature={targetTemperature}
             setTargetTemperature={setTargetTemperature}
-            raspberryStatus={raspberryStatus}
-            setRaspberryStatus={setRaspberryStatus}
+            isIncubatorRunning={isIncubatorRunning}
+            setIsIncubatorRunning={setIsIncubatorRunning}
           />
         )}
-        <Select style={{ marginTop: '2em' }} value={dayRange} onChange={handleDayRangeChange}>
+        <Select style={{ marginTop: '2rem' }} value={dayRange} onChange={handleDayRangeChange}>
           <MenuItem value={1}>One day</MenuItem>
           <MenuItem value={7}>One week</MenuItem>
           <MenuItem value={30}>One month</MenuItem>

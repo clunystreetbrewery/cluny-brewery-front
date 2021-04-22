@@ -120,14 +120,11 @@ const LoginForm = ({ closeModal, setIsLoggedIn }) => {
   );
 };
 
-const Header = ({setIsLoggedIn}) => {
-
+const Header = ({ setIsLoggedIn }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const toggleModal = () => setIsModalOpen(!isModalOpen);
 
   const token = localStorage.getItem('token');
-
-
 
   return (
     <>
@@ -148,7 +145,7 @@ const Header = ({setIsLoggedIn}) => {
           <CloseContainer>
             <CloseIcon onClick={toggleModal} />
           </CloseContainer>
-          <LoginForm closeModal={toggleModal} setIsLoggedIn={setIsLoggedIn}/>
+          <LoginForm closeModal={toggleModal} setIsLoggedIn={setIsLoggedIn} />
         </ModalContainer>
       </Modal>
     </>
