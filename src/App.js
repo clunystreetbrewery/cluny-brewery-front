@@ -268,12 +268,6 @@ const App = () => {
       <GlobalStyle />
       <Container>
         <Header setIsLoggedIn={setIsLoggedIn} />
-        {!raspberryStatus && (
-          <ErrorContainer style={{ marginTop: '2rem' }}>
-            <ThumbDownIcon />
-            raspberry is unreachable ...
-          </ErrorContainer>
-        )}
         {isLoggedIn && (
           <TemperaturePickerWidget
             targetTemperature={targetTemperature}
@@ -281,6 +275,12 @@ const App = () => {
             isIncubatorRunning={isIncubatorRunning}
             setIsIncubatorRunning={setIsIncubatorRunning}
           />
+        )}
+        {!raspberryStatus && (
+          <ErrorContainer style={{ marginTop: '2rem' }}>
+            <ThumbDownIcon />
+            <p>Raspberry is unreachable</p>
+          </ErrorContainer>
         )}
         <Select style={{ marginTop: '2rem' }} value={dayRange} onChange={handleDayRangeChange}>
           <MenuItem value={1}>One day</MenuItem>

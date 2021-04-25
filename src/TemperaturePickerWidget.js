@@ -4,19 +4,31 @@ import styled from 'styled-components';
 import Card from '@material-ui/core/Card';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import Switch from '@material-ui/core/Switch';
-// import Input from '@material-ui/core/Input';
-// import Button from '@material-ui/core/Button';
+import Input from '@material-ui/core/Input';
+import Button from '@material-ui/core/Button';
+import Divider from '@material-ui/core/Divider';
 
 import { apiUrl } from './App';
 
 const Container = styled(Card)`
+  position: relative;
   min-width: 10rem;
   margin-top: 2rem;
-  padding: 1em;
+  padding: 1rem;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+`;
+
+const LoadingContainer = styled.div`
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: rgba(255, 255, 255, 0.5);
 `;
 
 const Incubator = styled.div`
@@ -25,35 +37,36 @@ const Incubator = styled.div`
   align-items: center;
 `;
 
-// const TargetTemperatureTitle = styled.p`
-//   text-align: center;
-//   font-size: 1.5em;
-//   margin: 0;
+const TargetTemperatureTitle = styled.p`
+  text-align: center;
+  font-size: 1.5rem;
 
-//   @media (max-width: 700px) {
-//     font-size: 1em;
-//   }
-// `;
+  @media (max-width: 700px) {
+    font-size: 1em;
+  }
+`;
 
-// const FormContainer = styled.form`
-//   width: 100%;
-//   padding: 1em;
-//   justify-content: space-between;
-//   margin: auto;
-// `;
+const FormContainer = styled.form`
+  display: flex;
+  flex-direction: column;
+  button {
+    margin-top: 0.5rem;
+  }
+`;
 
-// const ErrorText = styled.p`
-//   color: tomato;
-// `;
+const ErrorText = styled.p`
+  color: tomato;
+`;
 
 const TemperaturePickerWidget = ({
-  // targetTemperature,
-  // setTargetTemperature,
+  targetTemperature,
+  setTargetTemperature,
   isIncubatorRunning,
   setIsIncubatorRunning,
 }) => {
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [inputTemp, setInputTemp] = useState(targetTemperature);
 
   const token = localStorage.getItem('token');
   const axiosConfig = {
@@ -76,40 +89,31 @@ const TemperaturePickerWidget = ({
     setLoading(false);
   };
 
-  // const onSubmit = async (e) => {
-  //   e.preventDefault();
-
-  //   const data = { value: targetTemperature };
-
-  //   try {
-  //     setError(false);
-  //     const res = await axios.post(apiUrl + '/set_fridge_temperature', data, axiosConfig);
-  //     setTargetTemperature(res.data.new_target_temperature);
-
-  //     axios
-  //       .get(apiUrl + '/incubator', axiosConfig)
-  //       .then((res) => {
-  //         setIsIncubatorRunning(res.data.is_incubator_running);
-  //       })
-  //       .catch((e) => {
-  //         console.error(e);
-  //         setError(true);
-  //       });
-
-  //     if (res.data.error) {
-  //       throw new Error(res.data.error);
-  //     }
-  //   } catch (error) {
-  //     setError(error.message);
-  //   }
-  // };
-
-  if (error) {
-    return <Container>Oups something went wrong ...</Container>;
-  }
+  const onSubmit = async (e) => {
+    e.preventDefault();
+    setError(false);
+    setLoading(true);
+    try {
+      const res = await axios.post(
+        apiUrl + '/set_fridge_temperature',
+        { value: parseInt(inputTemp) },
+        axiosConfig,
+      );
+      setTargetTemperature(res.data.new_target_temperature);
+    } catch (error) {
+      console.error(error);
+      setLoading(false);
+      setError(error.message);
+    }
+  };
 
   return (
     <Container>
+      {loading && (
+        <LoadingContainer>
+          <CircularProgress size="3rem" style={{ marginLeft: 5 }} />
+        </LoadingContainer>
+      )}
       <Incubator>
         <Switch
           checked={isIncubatorRunning}
@@ -119,30 +123,32 @@ const TemperaturePickerWidget = ({
         />
         <p style={{ marginLeft: 15 }}>
           Incubator:
-          {loading ? (
-            <CircularProgress size="1rem" style={{ marginLeft: 5 }} />
-          ) : (
-            <span style={{ marginLeft: 5, color: isIncubatorRunning ? 'green' : 'red' }}>
-              {isIncubatorRunning ? 'On' : 'Off'}
-            </span>
-          )}
+          <span style={{ marginLeft: 5, color: isIncubatorRunning ? 'green' : 'red' }}>
+            {isIncubatorRunning ? 'On' : 'Off'}
+          </span>
         </p>
       </Incubator>
-
-      {/* <p>Target temperature: {targetTemperature}°C</p>
+      <Divider style={{ width: '100%' }} />
+      <TargetTemperatureTitle>
+        Target temperature: <b>{targetTemperature}°C</b>
+      </TargetTemperatureTitle>
       <FormContainer onSubmit={onSubmit}>
-        <input
-          type="number"
-          onChange={onChangeTargetTemperature}
-          value={inputTargetTemperature}
-          min="4"
-          max="29"
+        <Input
+          value={inputTemp}
+          onChange={(e) => setInputTemp(e.target.value)}
+          disabled={loading}
+          inputProps={{
+            type: 'number',
+            min: 4,
+            max: 29,
+          }}
         />
-        <Button type="submit" variant="contained" color="primary">
-          Enter new target
+        <Button type="submit" variant="contained" color="primary" disabled={loading}>
+          Set temperature
         </Button>
-        {error && <ErrorText>{error}</ErrorText>}
-      </FormContainer> */}
+      </FormContainer>
+
+      {error && <ErrorText>Oups something went wrong ...</ErrorText>}
     </Container>
   );
 };
