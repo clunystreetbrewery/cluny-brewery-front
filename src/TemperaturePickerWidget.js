@@ -81,11 +81,15 @@ const TemperaturePickerWidget = ({
         apiUrl + '/incubator?switch=' + event.target.checked,
         axiosConfig,
       );
-      setIsIncubatorRunning(res.data.is_incubator_running);
+      
+      if(!(res.data.error === undefined)){
+        setError(true);
+      }    
     } catch (e) {
       console.error(e);
       setError(true);
     }
+
     setLoading(false);
   };
 
@@ -102,9 +106,9 @@ const TemperaturePickerWidget = ({
       setTargetTemperature(res.data.new_target_temperature);
     } catch (error) {
       console.error(error);
-      setLoading(false);
       setError(error.message);
     }
+    setLoading(false);
   };
 
   return (
