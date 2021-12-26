@@ -143,8 +143,16 @@ const handleData = (data) => {
   const maxPointsNumber = 250;
   const intervalBetweenPoints = data.length / maxPointsNumber;
   let counter = 1;
+  let blue = 0;
+  let green = 0;
+  let yellow = 0;
+  let date = 0;
 
   data.forEach((d) => {
+    blue = d.temperature_blue;
+    green = d.temperature_green;
+    yellow = d.temperature_yellow;
+    date = d.date;
     if (counter < intervalBetweenPoints) {
       counter += 1;
     } else {
@@ -153,28 +161,29 @@ const handleData = (data) => {
       max = Math.max(max, d.temperature_blue, d.temperature_green, d.temperature_yellow);
 
       temperature_blue.data.push({
-        x: d.date,
-        y: d.temperature_blue.toFixed(2),
+        x: date,
+        y: blue.toFixed(2),
       });
       temperature_green.data.push({
-        x: d.date,
-        y: d.temperature_green.toFixed(2),
+        x: date,
+        y: green.toFixed(2),
       });
       temperature_yellow.data.push({
-        x: d.date,
-        y: d.temperature_yellow.toFixed(2),
+        x: date,
+        y: yellow.toFixed(2),
       });
     }
   });
   newTemperatures.push(temperature_blue, temperature_green, temperature_yellow);
-
-  return { newTemperatures, max, min };
+  let newLastTemperatures = {"data": date, "blue": blue, "green": green, "yellow":yellow};
+  return { newTemperatures, max, min, newLastTemperatures };
 };
 
 const App = () => {
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(false);
   const [temperatures, setTemperatures] = useState([]);
+  const [lastTemperatures, setLastTemperatures] = useState([]);
   const [xMax, setXMax] = useState(0);
   const [xMin, setXMin] = useState(100);
   const [dayRange, setDayRange] = useState(7);
@@ -234,7 +243,7 @@ const App = () => {
     axios
       .get(url)
       .then((res) => {
-        const { newTemperatures, max, min } = handleData(res.data);
+        const { newTemperatures, max, min, newLastTemperatures } = handleData(res.data);
         setTemperatures(newTemperatures);
         setXMax(max);
         setXMin(min);
