@@ -81,6 +81,7 @@ const TemperaturePickerWidget = ({
         apiUrl + '/incubator?switch=' + event.target.checked,
         axiosConfig,
       );
+      setIsIncubatorRunning(res.data.is_incubator_running)
       console.log(res)
       if(!(res.data.error === undefined)){
         //setError(true);

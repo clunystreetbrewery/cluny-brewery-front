@@ -208,7 +208,7 @@ const App = () => {
         setIsIncubatorRunning(is_incubator_running);
         if (Boolean(error)) {
           console.warn(error);
-          setRaspberryStatus(false);
+          //setRaspberryStatus(false);
         }
 
         if (res.data.authentification) {
