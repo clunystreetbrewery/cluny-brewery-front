@@ -285,12 +285,6 @@ const App = () => {
             setIsIncubatorRunning={setIsIncubatorRunning}
           />
         )}
-        {!raspberryStatus && (
-          <ErrorContainer style={{ marginTop: '2rem' }}>
-            <ThumbDownIcon />
-            <p>Raspberry is unreachable</p>
-          </ErrorContainer>
-        )}
         <Select style={{ marginTop: '2rem' }} value={dayRange} onChange={handleDayRangeChange}>
           <MenuItem value={1}>One day</MenuItem>
           <MenuItem value={7}>One week</MenuItem>
